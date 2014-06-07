@@ -10,6 +10,8 @@ public class TPCMaster {
 
     private int numSlaves;
     private KVCache masterCache;
+    
+    private TreeMap<Long, TPCSlaveInfo> slaves;
 
     public static final int TIMEOUT = 3000;
 

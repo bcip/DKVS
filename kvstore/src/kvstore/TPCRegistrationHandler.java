@@ -44,6 +44,12 @@ public class TPCRegistrationHandler implements NetworkHandler {
     @Override
     public void handle(Socket slave) {
         // implement me
+    	try {
+			threadpool.addJob(new RegistrationHandler(slave));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /**
@@ -67,6 +73,31 @@ public class TPCRegistrationHandler implements NetworkHandler {
         @Override
         public void run() {
             // implement me
+        	try {
+				KVMessage regMsg = new KVMessage(slave);
+				String msg = regMsg.getMessage();
+				if(regMsg.getMsgType().equals("register")){
+					TPCSlaveInfo slaveInfo = new TPCSlaveInfo(msg);
+					master.registerSlave(slaveInfo);
+				}
+				String respmsg = "Successfully registered " + msg;
+				KVMessage respMsg = new KVMessage(RESP, respmsg);
+				respMsg.sendMessage(slave);
+			} catch (KVException e) {
+				try {
+					(new KVMessage(RESP, ERROR_INVALID_FORMAT)).sendMessage(slave);
+				} catch (KVException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} finally {
+				try {
+					slave.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
         }
     }
 }

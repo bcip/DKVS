@@ -2,7 +2,9 @@ package kvstore;
 
 import static kvstore.KVConstants.*;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 /**
  * Implements NetworkHandler to handle 2PC operation requests from the Master/
  * Coordinator Server
@@ -56,6 +58,16 @@ public class TPCMasterHandler implements NetworkHandler {
     public void registerWithMaster(String masterHostname, SocketServer server)
             throws KVException {
         // implement me
+    	try {
+			Socket master = new Socket(masterHostname, 9090);
+			KVMessage regMsg = new KVMessage(REGISTER, slaveID + "@" + server.getHostname() + ":" + server.getPort());
+			regMsg.sendMessage(master);
+			KVMessage respMsg = new KVMessage(master);
+			master.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /**

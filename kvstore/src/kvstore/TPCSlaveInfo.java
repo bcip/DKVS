@@ -14,6 +14,8 @@ public class TPCSlaveInfo {
     private long slaveID;
     private String hostname;
     private int port;
+ // Regex to parse slave info
+    private static final Pattern SLAVE_INFO_REGEX = Pattern.compile("^(.*)@(.*):(.*)$");
 
     /**
      * Construct a TPCSlaveInfo to represent a slave server.
@@ -23,6 +25,20 @@ public class TPCSlaveInfo {
      */
     public TPCSlaveInfo(String info) throws KVException {
         // implement me
+    	try {
+            Matcher slaveInfoMatcher = SLAVE_INFO_REGEX.matcher(info);
+
+            if (!slaveInfoMatcher.matches()) {
+                throw new IllegalArgumentException();
+            }
+
+            slaveID = Long.parseLong(slaveInfoMatcher.group(1));
+            hostname = slaveInfoMatcher.group(2);
+            port = Integer.parseInt(slaveInfoMatcher.group(3));
+        } catch (Exception ex) {
+            throw new KVException(new KVMessage(
+                RESP, ERROR_INVALID_FORMAT));
+        }
     }
 
     public long getSlaveID() {
@@ -46,7 +62,18 @@ public class TPCSlaveInfo {
      */
     public Socket connectHost(int timeout) throws KVException {
         // implement me
-        return null;
+    	try {
+            Socket sock = new Socket();
+            sock.setSoTimeout(timeout);
+            sock.connect(new InetSocketAddress(hostname, port), TIMEOUT_MILLISECONDS);
+            return sock;
+        } catch (UnknownHostException ex) {
+            throw new KVException(new KVMessage(
+                RESP, ERROR_COULD_NOT_CONNECT));
+        } catch (IOException ex) {
+            throw new KVException(new KVMessage(
+                RESP, ERROR_COULD_NOT_CREATE_SOCKET));
+        }
     }
 
     /**
@@ -54,8 +81,16 @@ public class TPCSlaveInfo {
      * Best effort, ignores error since the response has already been received.
      *
      * @param sock Socket to be closed
+     * @throws KVException 
      */
-    public void closeHost(Socket sock) {
+    public void closeHost(Socket sock) throws KVException {
         // implement me
+    	try {
+			sock.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			throw new KVException(new KVMessage(
+	                RESP, ERROR_COULD_NOT_CLOSE));
+		}
     }
 }
