@@ -17,7 +17,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-
 /**
  * This is the object that is used to generate the XML based messages for
  * communication between clients and servers.
@@ -88,7 +87,8 @@ public class KVMessage implements Serializable {
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance()
 					.newDocumentBuilder();
 			sock.setSoTimeout(timeout);
-			NoCloseInputStream ncis = new NoCloseInputStream(sock.getInputStream());
+			NoCloseInputStream ncis = new NoCloseInputStream(
+					sock.getInputStream());
 			Document doc = builder.parse(ncis);
 			Node KVMessage = doc.getElementsByTagName("KVMessage").item(0);
 			if (KVMessage == null) {
@@ -127,10 +127,30 @@ public class KVMessage implements Serializable {
 							KVConstants.ERROR_INVALID_FORMAT));
 				}
 			} else if (this.msgType.equals(KVConstants.RESP)) {
-				if (!((Key != null && Value != null && Message == null) ||
-						(Key == null && Value == null && Message != null))) {
+				if (!((Key != null && Value != null && Message == null) || (Key == null
+						&& Value == null && Message != null))) {
 					throw new KVException(new KVMessage(KVConstants.RESP,
 							KVConstants.ERROR_INVALID_FORMAT));
+				}
+			} else if (this.msgType.equals(KVConstants.REGISTER)) {
+				if (Key != null || Value != null || Message == null) {
+					throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+				}
+			} else if (this.msgType.equals(KVConstants.READY)) {
+				if (Key != null || Value != null || Message != null) {
+					throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+				}
+			} else if (this.msgType.equals(KVConstants.ABORT)) {
+				if (Key != null || Value != null) {
+					throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+				}
+			} else if (this.msgType.equals(KVConstants.COMMIT)) {
+				if (Key != null || Value != null || Message != null) {
+					throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+				}
+			} else if (this.msgType.equals(KVConstants.ACK)) {
+				if (Key != null || Value != null || Message != null) {
+					throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
 				}
 			} else {
 				throw new KVException(new KVMessage(KVConstants.RESP,
@@ -138,8 +158,7 @@ public class KVMessage implements Serializable {
 			}
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
-			KVMessage exceptMessage = new KVMessage(
-					KVConstants.RESP,
+			KVMessage exceptMessage = new KVMessage(KVConstants.RESP,
 					KVConstants.ERROR_PARSER);
 			throw new KVException(exceptMessage);
 		} catch (SAXException e) {
@@ -149,7 +168,7 @@ public class KVMessage implements Serializable {
 			throw new KVException(exceptMessage);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			// e.printStackTrace();
 			KVMessage exceptMessage = new KVMessage(KVConstants.RESP,
 					KVConstants.ERROR_COULD_NOT_RECEIVE_DATA);
 			throw new KVException(exceptMessage);
@@ -199,15 +218,25 @@ public class KVMessage implements Serializable {
 			} else if (this.msgType.equals(KVConstants.DEL_REQ)) {
 				shouldKey = true;
 			} else if (this.msgType.equals(KVConstants.RESP)) {
-				if(this.message != null)
+				if (this.message != null)
 					shouldMessage = true;
-				else{
+				else {
 					shouldValue = true;
 					shouldKey = true;
 				}
+			} else if (this.msgType.equals(KVConstants.REGISTER)) {
+				shouldMessage = true;
+			} else if (this.msgType.equals(KVConstants.ABORT)) {
+				if (this.message != null) {
+					shouldMessage = true;
+				}
 			} else {
-				throw new KVException(new KVMessage(KVConstants.RESP,
-						KVConstants.ERROR_INVALID_FORMAT));
+				if (!(this.msgType.equals(KVConstants.READY)
+						|| this.msgType.equals(KVConstants.COMMIT) 
+						|| this.msgType.equals(KVConstants.ACK))) {
+					throw new KVException(new KVMessage(KVConstants.RESP,
+							KVConstants.ERROR_INVALID_FORMAT));
+				}
 			}
 
 			if (shouldKey) {
@@ -234,29 +263,30 @@ public class KVMessage implements Serializable {
 			Document doc = builder.newDocument();
 			Element KVMessage = doc.createElement("KVMessage");
 			doc.appendChild(KVMessage);
-			
+
 			KVMessage.setAttribute("type", this.msgType);
-			
-			if(shouldKey){
+
+			if (shouldKey) {
 				Element Key = doc.createElement("Key");
 				KVMessage.appendChild(Key);
 				Key.appendChild(doc.createTextNode(this.key));
 			}
-			if(shouldValue){
+			if (shouldValue) {
 				Element Value = doc.createElement("Value");
 				KVMessage.appendChild(Value);
 				Value.appendChild(doc.createTextNode(this.value));
 			}
-			if(shouldMessage){
+			if (shouldMessage) {
 				Element Message = doc.createElement("Message");
 				KVMessage.appendChild(Message);
 				Message.appendChild(doc.createTextNode(this.message));
 			}
-			
+
 			return printDoc(doc);
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
-			throw new KVException(new KVMessage(KVConstants.RESP, KVConstants.ERROR_PARSER));
+			throw new KVException(new KVMessage(KVConstants.RESP,
+					KVConstants.ERROR_PARSER));
 		}
 
 	}
@@ -277,20 +307,20 @@ public class KVMessage implements Serializable {
 	public void sendMessage(Socket sock) throws KVException {
 		// implement me
 		try {
-			
+
 			String outputMessage = this.toXML();
 			OutputStream outstream = sock.getOutputStream();
 			byte[] sendData = outputMessage.getBytes("UTF-8");
 			outstream.write(sendData);
 			outstream.flush();
 			sock.shutdownOutput();
-			
+
 			System.out.println(outputMessage);
-			
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			throw new KVException(new KVMessage(KVConstants.RESP, KVConstants.ERROR_COULD_NOT_SEND_DATA));
+			throw new KVException(new KVMessage(KVConstants.RESP,
+					KVConstants.ERROR_COULD_NOT_SEND_DATA));
 		}
 	}
 

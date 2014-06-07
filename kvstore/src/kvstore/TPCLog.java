@@ -107,6 +107,28 @@ public class TPCLog {
      */
     public void rebuildServer() throws KVException {
         // implement me
+    	boolean isCommit = false;
+    	KVMessage operation = null;
+    	loadFromDisk();
+    	for(KVMessage entry : entries){
+    		if (entry.getMsgType().equals(KVConstants.PUT_REQ)
+    				|| entry.getMsgType().equals(KVConstants.DEL_REQ)){
+    			operation = entry;
+    		} else if (entry.getMsgType().equals(KVConstants.COMMIT)){
+    			isCommit = true;
+    		} else if (entry.getMsgType().equals(KVConstants.ABORT)){
+    			isCommit = false;
+    		} else if (entry.getMsgType().equals(KVConstants.ACK)){
+    			if (isCommit && operation != null){
+    				if (operation.getMsgType().equals(KVConstants.PUT_REQ)){
+    					kvServer.put(operation.getKey(), operation.getValue());
+    				}else{
+    					kvServer.del(operation.getKey());
+    				}
+    			}
+    			operation = null;
+    		}
+    	}
     }
 
 }
