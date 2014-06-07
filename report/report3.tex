@@ -1,0 +1,877 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings, xcolor}
+\usepackage{paralist}
+\usepackage{chngpage}
+\usepackage[colorlinks,linkcolor=black,anchorcolor=black,citecolor=black]{hyperref}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true
+  tabsize=3
+}
+
+\title{Project 3 - Build a Single-Server Key-Value Store}
+\author{
+Xie Yuanhang  \\   2011012344\and
+Kuang Zhonghong  \\   2011012357\and
+Li Qingyang   \\   2011012360 \and
+Yin Mingtian   \\   2011012362\and
+Wang Qinshi   \\   2012011311}
+
+\changetext{}{+1cm}{-0.5cm}{-0.5cm}{}
+
+\date{}
+\begin{document}
+\maketitle
+
+\setcounter{section}{-1}
+ \section{Repository URL}
+\texttt{https://github.com/bcip/KVS}
+
+\section{Implement of \texttt{KVClient}}
+\subsection{Overview}
+In this task, we are supposed to implement the \texttt{KVClient} class which is ought to be able to send \textbf{serialized} request to the server
+over the network using \texttt{socket}.
+\subsection{Correctness Constraints}
+\begin{compactitem}
+\item If an error occurs at any point while processing a request that prevents a succesful responce, a \texttt{KVException} should be propogated
+	to the client. And a \texttt{KVException} should contain a \texttt{KVMessage} with an error string from \texttt{KVConstants.java}.
+\item Requests must be serialized and each of them should be made with a new \texttt{Socket}.
+\end{compactitem}
+\subsection{Declaration}
+\subsection{Description}
+\begin{algorithm}
+	\begin{algorithmic}
+		\Procedure{connectHost}{}
+			\State // ToDo: Exception-catch with KVException, see KVConstants
+			\State \texttt{socket} $\leftarrow$ \texttt{new Socket(server, port)}
+			\State \texttt{socket.setSoTimeOut(KVConstants.TIMEOUT\_MILLISECONDS)}
+			\State \Return \texttt{socket}
+		\EndProcedure
+		\Procedure{closeHost}{Socket sock}
+			\State // ToDo: Exception-catch with KVException, see KVConstants
+			\State \texttt{sock.close}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\begin{algorithmic}
+		\Procedure{put}{String key, String value}
+			\State // ToDo: Exception-catch with KVException, see KVConstants
+			\State \texttt{socket} $\leftarrow$ \texttt{connectHost}
+			\State \texttt{message} $\leftarrow$ \texttt{new KVMessage(KVConstants.PUT\_REQ)}
+			\State \texttt{message.key} $\leftarrow$ \texttt{key}
+			\State \texttt{message.value} $\leftarrow$ \texttt{value}
+			\State \texttt{response} $\leftarrow$ \texttt{new KVMessage(socket.getInputStream)}
+			\State \texttt{closeHost(socket)}
+			\If{\texttt{response} is invalid}
+				\State // ToDo: throw KVException, see KVConstants
+			\EndIf
+		\EndProcedure
+		\Procedure{get}{String key}
+			\State // ToDo: Exception-catch with KVException, see KVConstants
+			\State \texttt{socket} $\leftarrow$ \texttt{connectHost}
+			\State \texttt{message} $\leftarrow$ \texttt{new KVMessage(KVConstants.GET\_REQ)}
+			\State \texttt{message.key} $\leftarrow$ \texttt{key}
+			\State \texttt{message.sendMessage(socket)}
+			\State \texttt{response} $\leftarrow$ \texttt{new KVMessage(socket.getInputStream)}
+			\State \texttt{closeHost(socket)}
+			\If{\texttt{response} is invalid}
+				\State // ToDo: throw KVException, see KVConstants
+			\EndIf
+			\State \Return \texttt{response.getValue}
+		\EndProcedure
+		\Procedure{del}{String key}
+			\State // ToDo: Exception-catch with KVException, see KVConstants
+			\State \texttt{socket} $\leftarrow$ \texttt{connectHost}
+			\State \texttt{message} $\leftarrow$ \texttt{new KVMessage(KVConstants.DEL\_REQ)}
+			\State \texttt{message.key} $\leftarrow$ \texttt{key}
+			\State \texttt{message.sendMessage(socket)}
+			\State \texttt{response} $\leftarrow$ \texttt{new KVMessage(socket.getInputStream)}
+			\State \texttt{closeHost(socket)}
+			\If{\texttt{response} is invalid}
+				\State // ToDo: throw KVException, see KVConstants
+			\EndIf
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\subsection{Test}
+The test code for \texttt{KVClient} is as follows:
+\begin{lstlisting}[language=java]
+@Test(timeout = 20000)
+    public void testInvalidKey() {
+    	System.out.println("Test put invalid key in KVClient.");
+        try {
+            client.put("", "bar");
+            fail("Didn't fail on empty key");
+        } catch (KVException kve) {
+            String errorMsg = kve.getKVMessage().getMessage();
+            assertEquals(errorMsg, ERROR_INVALID_KEY);
+            System.out.println("Ok.");
+        }
+    }
+
+    @Test(timeout = 20000)
+	public void testInvalidValue(){
+    	System.out.println("Test put invalid value in KVClient.");
+		try {
+			client.put("key", "");
+			fail("Didn't fail on empty value");
+		} catch (KVException kve) {
+			String errorMsg = kve.getKVMessage().getMessage();
+			assertEquals(errorMsg, ERROR_INVALID_VALUE);
+			System.out.println("Ok.");
+		}
+	}
+
+    @Test(timeout = 20000)
+	public void testInvalidPut(){
+    	System.out.println("Test invalid put in KVClient.");
+		try {
+			setupSocket("invalidputreq.txt");
+			client.put("key", null);
+			fail("Didn't fail on null value");
+		} catch (KVException kve) {
+			String errorMsg = kve.getKVMessage().getMessage();
+			assertEquals(errorMsg, ERROR_INVALID_VALUE);
+			System.out.println("Ok.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+    
+    @Test(timeout = 20000)
+	public void testErrorResp(){
+    	System.out.println("Test error response in KVClient.");
+		try {
+			setupSocket("putreq.txt");
+			setupSocket("errorresp.txt");
+			client.put("key", "value");
+			fail("Didn't fail on errorresp");
+		} catch (KVException kve) {
+			String errorMsg = kve.getKVMessage().getMessage();
+			assertEquals(errorMsg, "Error Message");
+			System.out.println("Ok.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+    
+    @Test(timeout = 20000)
+    public void testSocket(){
+    	System.out.println("Test socket in KVClient.");
+    	try {
+    		System.out.println("Test get in KVClient.");
+    		setupSocket("getreq.txt");
+    		setupSocket("getresp.txt");
+    		assertEquals(client.get("key"), "value");
+    		System.out.println("Ok");
+    		
+    		System.out.println("Test put in KVClient.");
+    		setupSocket("putreq.txt");
+    		setupSocket("putresp.txt");
+    		client.put("key", "value");
+    		System.out.println("Ok");
+    		
+    		System.out.println("Test del in KVClient.");
+    		setupSocket("delreq.txt");
+    		setupSocket("delresp.txt");
+    		client.del("key");
+    		System.out.println("Ok");
+    	}catch (KVException kve) {
+    		String errorMsg = kve.getKVMessage().getMessage();
+    		System.out.println(errorMsg);
+    	}catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    }
+\end{lstlisting}
+
+We test with all the files in \texttt{test-inputs}; And we also test client with invalid key or value. We test errors.
+
+And the result is:
+\begin{lstlisting}
+runtest:
+    [junit] Testsuite: kvstore.KVClientTest
+    [junit] Test put invalid key in KVClient.
+    [junit] Ok.
+    [junit] Test put invalid value in KVClient.
+    [junit] Ok.
+    [junit] Test invalid put in KVClient.
+    [junit] Ok.
+    [junit] Test error response in KVClient.
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="putreq">
+    [junit] <Key>key</Key>
+    [junit] <Value>value</Value>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] Ok.
+    [junit] Test socket in KVClient.
+    [junit] Test get in KVClient.
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="getreq">
+    [junit] <Key>key</Key>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] Ok
+    [junit] Test put in KVClient.
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="putreq">
+    [junit] <Key>key</Key>
+    [junit] <Value>value</Value>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] Ok
+    [junit] Test del in KVClient.
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="delreq">
+    [junit] <Key>key</Key>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] Ok
+    [junit] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.873 sec
+    [junit] 
+    [junit] Testcase: testInvalidKey took 0.073 sec
+    [junit] Testcase: testInvalidValue took 0.016 sec
+    [junit] Testcase: testInvalidPut took 0.202 sec
+    [junit] Testcase: testErrorResp took 0.354 sec
+    [junit] Testcase: testSocket took 0.074 sec
+\end{lstlisting}
+
+\section{Implement of \texttt{KVMessage}}
+\subsection{Overview}
+In this task, we are supposed to implement the \texttt{KVMessage} class with \textbf{serialization} and \textbf{deserialization}.
+
+\subsection{Correctness Constraints}
+\begin{compactitem}
+	\item Use \texttt{NoCloseInputStream} to reuse corresponding \texttt{OutputStream} of the socket to send a response.
+		Here is a \href{https://weblogs.java.net/blog/kohsuke/archive/2005/07/socket_xml_pitf.html}{reference}.
+	\item Implement \texttt{KVMessage} constructor with timeout but do not directly use it, use \texttt{KVMessage(Socket socket)} instead.
+	\item \texttt{KVMessage} must serialize to strict formats.
+\end{compactitem}
+\subsection{Declaration}
+\subsection{Description}
+\begin{algorithm}
+	\begin{algorithmic}
+		\Procedure{KVMessage}{Socket sock, int timeout}
+			\State // ToDo: Exception-catch with KVException, see KVConstants
+			\State \texttt{sock.setSoTimeout(timeout)}
+			\State \texttt{in} $\leftarrow$ \texttt{new NoCloseInputStream(sock.getInputStream)}
+			\State // some parse job\dots
+			\State \texttt{kvMsg} $\leftarrow$ \texttt{getElementByTagName(KVMessage)}
+			\State \texttt{msgType} $\leftarrow$ \texttt{kvMsg.getAttribute(type)}
+			\State \texttt{key} $\leftarrow$ \texttt{getElementByTagName(Key)}
+			\State \texttt{value} $\leftarrow$ \texttt{getElementByTagName(Value)}
+			\State \texttt{message} $\leftarrow$ \texttt{getElementByTagName(Message)}
+		\EndProcedure
+		\Procedure{KVMessage}{KVMessage kvm}
+			\State \texttt{msgType} $\leftarrow$ \texttt{kvm.msgType}
+			\State \texttt{key} $\leftarrow$ \texttt{kvm.key}
+			\State \texttt{value} $\leftarrow$ \texttt{kvm.value}
+			\State \texttt{message} $\leftarrow$ \texttt{kvm.message}
+		\EndProcedure
+		\Procedure{toXML}{}
+			\State // generate XML representation for message\dots
+			\State \texttt{doc} $\leftarrow$ \texttt{newDocument}
+			\State \texttt{kvm} $\leftarrow$ \texttt{createElement(KVMessage)}
+			\State \texttt{doc.appendChild(kvm)}
+			\If{msgType equals resp}
+				\If{key is not null}
+					\State \texttt{kvm.appendChild(createElement(Key))}
+				\EndIf
+				\If{value is not null}
+					\State \texttt{kvm.appendChild(createElement(Value))}
+				\EndIf
+				\If{message is not null}
+					\State \texttt{kvm.appendChild(createElement(Message))}
+				\EndIf
+			\Else
+				\State \texttt{kvm.appendChild(createElement(Key))}
+				\If{msgType equals putreq}
+					\State \texttt{kvm.appendChild(createElement(Value))}
+				\ElsIf{msgType not equals getreq or delreq}
+					\State // ToDo: Exception-catch with KVException, see KVConstants
+				\EndIf
+			\EndIf
+			\State \texttt{transformer} $\leftarrow$ \texttt{TransformerFactory.newInstanc().newTransformer()}
+			\State \texttt{transformer.setOutputProperty} : \texttt{ENCODING, METHOD} etc.
+			\State Use \texttt{transformer} to transform \texttt{doc} into \texttt{String} as \texttt{retStr}
+			\State \Return \texttt{retStr}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\begin{algorithmic}
+		\Procedure{sendMessage}{Socket sock}
+			\State // ToDo: Exception-catch with KVException, see KVConstants
+			\State \texttt{out} $\leftarrow$ \texttt{sock.getOutputStream}
+			\State \texttt{str} $\leftarrow$ \texttt{toXML()}
+			\State \texttt{out.write(str.getBytes)}
+			\State \texttt{out.flush}
+			\State \texttt{out.shutdownOutput}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\subsection{Test}
+The test code is here.
+\begin{lstlisting}[language=java]
+	@Test
+    public void successfullyParsesPutReq() throws KVException {
+        setupSocket("putreq.txt");
+        KVMessage kvm = new KVMessage(sock);
+        assertNotNull(kvm);
+        assertEquals(PUT_REQ, kvm.getMsgType());
+        assertNull(kvm.getMessage());
+        assertNotNull(kvm.getKey());
+        assertNotNull(kvm.getValue());
+    }
+
+    @Test
+    public void successfullyParsesPutResp() throws KVException {
+        setupSocket("putresp.txt");
+        KVMessage kvm = new KVMessage(sock);
+        assertNotNull(kvm);
+        assertEquals(RESP, kvm.getMsgType());
+        assertTrue(SUCCESS.equalsIgnoreCase(kvm.getMessage()));
+        assertNull(kvm.getKey());
+        assertNull(kvm.getValue());
+    }
+    
+    @Test
+    public void successfullyParsesGetReq() throws KVException {
+    	setupSocket("getreq.txt");
+        KVMessage kvm = new KVMessage(sock);
+        assertNotNull(kvm);
+        assertEquals(GET_REQ, kvm.getMsgType());
+        assertNull(kvm.getMessage());
+        assertNotNull(kvm.getKey());
+        assertNull(kvm.getValue());
+    }
+    
+    @Test
+    public void successfullyParsesGetResp() throws KVException {
+        setupSocket("getresp.txt");
+        KVMessage kvm = new KVMessage(sock);
+        assertNotNull(kvm);
+        assertEquals(RESP, kvm.getMsgType());
+        assertNull(kvm.getMessage());
+        assertNotNull(kvm.getKey());
+        assertNotNull(kvm.getValue());
+    }
+    
+    @Test
+    public void unsuccessfullyParsesPutReq() throws KVException {
+        setupSocket("invalidputreq.txt");
+        try{
+        	KVMessage kvm = new KVMessage(sock);
+        	assertNotNull(kvm);
+            assertEquals(PUT_REQ, kvm.getMsgType());
+            assertNull(kvm.getMessage());
+            assertNotNull(kvm.getKey());
+            assertNotNull(kvm.getValue());
+        }catch(KVException e){
+        	assertEquals(RESP, e.getKVMessage().getMsgType());
+        	assertEquals(ERROR_INVALID_FORMAT, e.getKVMessage().getMessage());
+        }
+    }
+    
+    @Test
+    public void successfullyToXml() throws KVException {
+    	setupSocket("putreq.txt");
+    	KVMessage kvm = new KVMessage(sock);
+    	assertNotNull(kvm);
+    	String kvmToXml = kvm.toXML();
+    	Socket stringSock = mock(Socket.class);
+    	try {
+            doNothing().when(stringSock).setSoTimeout(anyInt());
+            when(stringSock.getInputStream()).thenReturn(new StringBufferInputStream(kvmToXml));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    	KVMessage kvm1 = new KVMessage(stringSock);
+    	assertEquals(kvm.getMsgType(), kvm1.getMsgType());
+    	assertEquals(kvm.getMessage(), kvm1.getMessage());
+    	assertEquals(kvm.getKey(), kvm1.getKey());
+    	assertEquals(kvm.getValue(), kvm1.getValue());
+    }
+\end{lstlisting}
+Test constructor with \texttt{putreq,putresp,invalidputreq,getreq,getresp} XML and also test \texttt{toXml} with \texttt{putreq} XML file.
+
+And the result is as follows:
+\begin{lstlisting}
+runtest:
+    [junit] Testsuite: kvstore.KVMessageTest
+    [junit] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.313 sec
+    [junit] 
+    [junit] Testcase: successfullyParsesGetReq took 0.198 sec
+    [junit] Testcase: successfullyParsesGetResp took 0.003 sec
+    [junit] Testcase: unsuccessfullyParsesPutReq took 0.003 sec
+    [junit] Testcase: successfullyParsesPutReq took 0.003 sec
+    [junit] Testcase: successfullyToXml took 0.09 sec
+    [junit] Testcase: successfullyParsesPutResp took 0.003 sec
+\end{lstlisting}
+
+\section{Implement of \texttt{KVCache}}
+\subsection{Overview}
+In this task, we are supposed to implement a set-associative \texttt{KVCache} using second-chance algorithm.
+\subsection{Correctness Constraints}
+\begin{compactitem}
+\item When \texttt{get} is called on a \texttt{key}, the reference bit of that entry is set to \texttt{True}
+\item If \texttt{put} is called, and the \texttt{key} exists in the cache, write \texttt{value} to the entry, set reference bit to \texttt{True}. The queue remains the same.
+\item If \texttt{put} is called, the \texttt{key} doesn't exist in the cache. So there are two posible situation. First, the entry set is not full. then entry is added to the end of the queue. Second the entry set is full, replace the first entry with \texttt{False} reference bit while cycling through the queue.
+\end{compactitem}
+\subsection{Declaration}
+Here are the declaration for the class \texttt{KVCache}.
+
+A class \texttt{CacheEntry} that has instance elements \texttt{key}, \texttt{value}, a reference bit and a valid bit. And this class is used as cache elements.
+
+A number \texttt{numPerSet} to be the max size of each set.
+
+A 2-dim array \texttt{entrySet} of class \texttt{CacheEntry} of size \texttt{numSets} times \texttt{numPerSet} to simulate the cache entry sets.
+
+A 1-dim array \texttt{entryQueue} of class \texttt{LinkedList<CacheEntry>} with size \texttt{numSets}. And this is the queue needs for the second-chance algorithm.
+
+An array \texttt{entryLock} of class \texttt{ReentrantLock} with size \texttt{numSets}. The lock of entry sets for the caller of \texttt{get}, \texttt{put}, \texttt{del}.
+
+For method \texttt{put}:
+\begin{compactitem}
+\item \texttt{emptyEntry} to save the invalid entry of the sets for using it if entry not full. And first set it to be null.
+\end{compactitem}
+\subsection{Description}
+\begin{algorithm}
+    \begin{algorithmic}
+        \Procedure{get}{String key}
+            \State get \texttt{setId} by method \texttt{getSetId} with arguments \texttt{key}
+            \While{each element of \texttt{entrySet[setId]}}
+                \If{this element is valid and key of it equal to \texttt{key}}
+                    \State set the reference bit of it to be \texttt{True}
+                    \State return the value of it
+                \EndIf
+            \EndWhile
+        \EndProcedure
+    \end{algorithmic}
+    \begin{algorithmic}
+        \Procedure{put}{String key, String value}
+            \State get \texttt{setId} by method \texttt{getSetId} with arguments \texttt{key}
+            \While{each element of \texttt{entrySet[setId]}}
+                \If{the element is invalid}
+                    \State set the element to \texttt{emptyEntry}
+                \Else
+                    \If{the key of it is equal to \texttt{key}}
+                        \State replace the value of it with \texttt{value}
+                        \State set the reference bit of it to be \texttt{True} and return
+                    \EndIf
+                \EndIf
+            \EndWhile
+            \If{\texttt{emptyEntry} is not null}
+                \State set the key and value of \texttt{emptyEntry}
+                \State set the reference bit to be \texttt{False}
+                \State set the valid bit to be \texttt{True}
+                \State add it to the last of \texttt{entryQueue} and return
+            \EndIf
+            \State get the first entry with a \texttt{False} reference bit while cycling through \texttt{entryQueue}
+             \State set the key and value of the first entry
+             \State set the reference bit to be \texttt{False}
+             \State set the valid bit to be \texttt{True}
+             \State add it to the last of \texttt{entryQueue} and return
+        \EndProcedure
+    \end{algorithmic}
+    \begin{algorithmic}
+        \Procedure{del}{String key}
+            \State get \texttt{setId} by method \texttt{getSetId} with arguments \texttt{key}
+            \While{each element of \texttt{entrySet[setId]}}
+                \If{the element is valid and the key of it is equal to \texttt{key}}
+                    \State set the valid bit to be \texttt{False}
+                    \State remove it from \texttt{entryQueue}
+                \EndIf
+            \EndWhile
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+    \begin{algorithmic}
+        \Procedure{toXML()}{}
+            \State add docment node KVCache
+            \While{each cache set}
+                \State add docment node Set in KVCache node with attribute Id
+                \While{each entry in the set}
+                    \State add docment node CacheEntry in Set node with attribute isReferenced which is the reference bit of entry
+                    \State add docment node Key and Value in CacheEntry node with text value of them to be the key and value of entry
+                \EndWhile
+            \EndWhile
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+\subsection{Test}
+The test code is as follows:
+\begin{lstlisting}[language=java]
+    @Test
+    public void singlePutAndGet() {
+        KVCache cache = new KVCache(1, 4);
+        cache.put("hello", "world");
+        assertEquals("world", cache.get("hello"));
+    }
+    
+    @Test
+    public void testPutGetDelWithSecondChance(){
+    	KVCache cache = new KVCache(1, 3);
+    	cache.put("k1", "k1");
+    	cache.put("k2", "k2");
+    	cache.put("k3", "k3");
+    	assertEquals("k1", cache.get("k1"));
+    	cache.put("k1", "k2");
+    	assertEquals("k2", cache.get("k1"));
+    	cache.put("k4", "k4");
+    	assertNotNull(cache.get("k1"));
+    	assertNull(cache.get("k2"));
+    	cache.put("k5", "k5");
+    	assertNull(cache.get("k3"));
+    	cache.del("k1");
+    	assertNull(cache.get("k1"));
+    	cache.put("k1", "k1");
+    	cache.put("k2", "k2");
+    	assertNull(cache.get("k4"));
+    }
+\end{lstlisting}
+
+And test second-chance algorithm in the second method.
+
+And the test result is as follows:
+\begin{lstlisting}
+runtest:
+    [junit] Testsuite: kvstore.KVCacheTest
+    [junit] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 sec
+    [junit] 
+    [junit] Testcase: testPutGetDelWithSecondChance took 0.003 sec
+    [junit] Testcase: singlePutAndGet took 0 sec
+\end{lstlisting}
+
+\section{Implement of \texttt{KVServer} and \texttt{KVStore}}
+\subsection{Overview}
+In this task, we are supposed to implement the \texttt{KVServer} with \textbf{atomic} requests
+and \texttt{KVStore} class following a \textbf{write-through} caching policy.
+\subsection{Correctness Constraints}
+\begin{compactitem}
+	\item All requests are atomic in that they must modify the state of both the cache and the store together.
+	\item Requests must be parallel across different sets and serial within the same set.
+	\item Follow write-through policy.
+	\item First query cache, if there is not, access the store.
+\end{compactitem}
+\subsection{Declaration}
+Add a new \texttt{Lock storeLock} to protect \texttt{dataStore}.
+\subsection{Description}
+\begin{algorithm}
+	\begin{algorithmic}
+		\Procedure{put}{String key, String value}
+			\State Check validity of key and value
+			\State \texttt{dataCache.getLock(key).lock}
+			\State \texttt{dataCache.put(key, value)}
+			\State // Write-through
+			\State \texttt{storeLock.lock}
+			\State \texttt{dataStore.put(key, value)}
+			\State \texttt{storeLock.unlock}
+			\State \texttt{dataCache.getLock(key).unlock}
+		\EndProcedure
+		\Procedure{get}{String key}
+		\State \texttt{dataCache.getLock(key).lock}
+		\State \texttt{value} $\leftarrow$ \texttt{dataCache.get(key)}
+		\If{\texttt{value} is null}
+			\State \texttt{storeLock.lock}
+			\State \texttt{value} $\leftarrow$ \texttt{dataStore.get(key)}
+			\State \texttt{storeLock.unlock}
+			\State \texttt{dataCache.put(key, value)}
+		\EndIf
+		\State \texttt{dataCache.getLock(key).unlock}
+		\State \Return \texttt{value}
+		\EndProcedure
+		\Procedure{del}{String key}
+		\State \texttt{dataCache.getLock(key).lock}
+		\State \texttt{storeLock.lock}
+		\State \texttt{dataStore.del(key)}
+		\State \texttt{dataCache.del(key)}
+		\State \texttt{storeLock.unlock}
+		\State \texttt{dataCache.getLock(key).unlock}
+		\EndProcedure
+		\Procedure{hasKey}{String key}
+		\State \Return \texttt{(dataStore.get(key) != null)}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\begin{algorithmic}
+		\Procedure{toXML}{}
+			\State \texttt{doc} $\leftarrow$ \texttt{newDocument}
+			\State \texttt{kvs} $\leftarrow$ \texttt{createElement(KVStore)}
+			\State \texttt{doc.appendChild(kvs)}
+			\For{each \texttt{key} in \texttt{store}}
+				\State \texttt{kvs.append(createElement(KVPair))}
+				\State \texttt{kvs.append(createElement(Key))} with \texttt{key}
+				\State \texttt{kvs.append(createElement(Value))} with \texttt{store.get(key)}
+			\EndFor
+			\State \texttt{transformer} $\leftarrow$ \texttt{TransformerFactory.newInstanc().newTransformer()}
+			\State \texttt{transformer.setOutputProperty} : \texttt{ENCODING, METHOD} etc.
+			\State use \texttt{transformer} to transform \texttt{doc} into \texttt{String} as \texttt{retStr}
+			\State \Return \texttt{retStr}
+		\EndProcedure
+		\Procedure{dumpToFile}{String fileName}
+			\State \texttt{writer} $\leftarrow$ \texttt{new BufferedWriter(new FileWriter(fileName))}
+			\State \texttt{writer.writer(toXML())}
+			\State \texttt{writer.close}
+		\EndProcedure
+		\Procedure{restoreFromFile}{String fileName}
+			\State \texttt{resetStore}
+			\State \texttt{kvps} $\leftarrow$ \texttt{getElementsByTagName(KVPair)}
+			\For{each \texttt{kvp} in \texttt{kvps}}
+				\State \texttt{store.put(kvp.key, kvp.value)} using \texttt{getElementsByTagName}
+			\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\subsection{Test}
+The test code for \texttt{KVServer} is as follows:
+\begin{lstlisting}[language=java]]
+    @Test
+    public void fuzzTest() throws KVException {
+        setupRealServer();
+        Random rand = new Random(8); // no reason for 8
+        Map<String, String> map = new HashMap<String, String>(10000);
+        String key, val;
+        for (int i = 0; i < 10000; i++) {
+            key = Integer.toString(rand.nextInt());
+            val = Integer.toString(rand.nextInt());
+            server.put(key, val);
+            map.put(key, val);
+        }
+        Iterator<Map.Entry<String, String>> mapIter = map.entrySet().iterator();
+        Map.Entry<String, String> pair;
+        while(mapIter.hasNext()) {
+            pair = mapIter.next();
+            assertTrue(server.hasKey(pair.getKey()));
+            assertEquals(pair.getValue(), server.get(pair.getKey()));
+            mapIter.remove();
+        }
+        assertTrue(map.size() == 0);
+    }
+
+    @Test
+    public void testNonexistentGetFails() {
+        setupRealServer();
+        try {
+            server.get("this key shouldn't be here");
+            fail("get with nonexistent key should error");
+        } catch (KVException e) {
+            assertEquals(KVConstants.RESP, e.getKVMessage().getMsgType());
+            assertEquals(KVConstants.ERROR_NO_SUCH_KEY, e.getKVMessage().getMessage());
+        }
+    }
+    
+    @Test
+    public void testPutGetDel() {
+    	setupRealServer();
+    	try{
+    		server.put("k1", "k1");
+    		assertEquals("k1", server.get("k1"));
+    		server.put("k1", "k2");
+    		assertEquals("k2", server.get("k1"));
+    		server.del("k1");
+    		assertNull(server.get("k1"));
+    	}catch(KVException e){
+    		assertEquals(KVConstants.ERROR_NO_SUCH_KEY, e.getKVMessage().getMessage());
+    	}
+    }
+    
+    @Test
+    public void testBadPut1(){
+    	setupRealServer();
+    	try{
+    		server.put("k1", null);
+    		fail();
+    	}catch(KVException e){
+    		assertEquals(KVConstants.ERROR_INVALID_VALUE, e.getKVMessage().getMessage());
+    	}
+    }
+    
+    @Test
+    public void testBadPut2(){
+    	setupRealServer();
+    	try{
+    		server.put("", "a");
+    		fail();
+    	}catch(KVException e){
+    		assertEquals(KVConstants.ERROR_INVALID_KEY, e.getKVMessage().getMessage());
+    	}
+    }
+    
+    @Test
+    public void testBadGet1(){
+    	setupRealServer();
+    	try{
+    		server.get("a");
+    		fail();
+    	}catch(KVException e){
+    		assertEquals(KVConstants.ERROR_NO_SUCH_KEY, e.getKVMessage().getMessage());
+    	}
+    }
+    
+    @Test
+    public void testBadDel1(){
+    	setupRealServer();
+    	try{
+    		server.del("a");
+    		fail();
+    	}catch(KVException e){
+    		assertEquals(KVConstants.ERROR_NO_SUCH_KEY, e.getKVMessage().getMessage());
+    	}
+    }
+    
+    @Test
+    public void testHasKey(){
+    	setupRealServer();
+    	try{
+    		server.put("k1", "k1");
+    		assertEquals(server.hasKey("k1"), true);
+    		assertEquals(server.hasKey("k2"), false);
+    	}catch(KVException e){
+    		fail("should not access this");
+    	}
+    }
+\end{lstlisting}
+
+And we test \texttt{put, get, del} with valid and invalid params. The result is:
+\begin{lstlisting}
+runtest:
+    [junit] Testsuite: kvstore.KVServerTest
+    [junit] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.091 sec
+    [junit] 
+    [junit] Testcase: testNonexistentGetFails took 0.222 sec
+    [junit] Testcase: testPutGetDel took 0.016 sec
+    [junit] Testcase: testBadPut1 took 0.006 sec
+    [junit] Testcase: testBadPut2 took 0.005 sec
+    [junit] Testcase: testBadGet1 took 0.006 sec
+    [junit] Testcase: testBadDel1 took 0.005 sec
+    [junit] Testcase: testHasKey took 0.008 sec
+    [junit] Testcase: fuzzTest took 6.645 sec
+\end{lstlisting}
+
+And since the test for \texttt{KVServer} also test \texttt{KVStore}, we have the initial test code for \texttt{KVStore}
+
+\begin{lstlisting}[language=java]
+    @Test
+    public void putAndGetOneKey() throws KVException {
+        String key = "this is the key.";
+        String val = "this is the value.";
+        store.put(key, val);
+        assertEquals(val, store.get(key));
+    }
+\end{lstlisting}
+
+And the result is:
+\begin{lstlisting}
+runtest:
+    [junit] Testsuite: kvstore.KVStoreTest
+    [junit] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 sec
+    [junit] 
+    [junit] Testcase: putAndGetOneKey took 0.003 sec
+\end{lstlisting}
+
+\section{Implement of \texttt{SocketServer}, \texttt{ServerClientHandler} and \texttt{ThreadPool}}
+\subsection{Overview}
+\subsection{Correctness Constraints}
+\subsection{Declaration}
+\begin{compactitem}
+	\item \texttt{BlockingQueue<Runnable>} \texttt{jobQueue} in \texttt{ThreadPool}
+\end{compactitem}
+\subsection{Description}
+\begin{algorithm}
+    \caption{class \texttt{SocketServer}}
+	\begin{algorithmic}
+        \Procedure{connect}{}
+            \State \texttt{server} $\leftarrow$ new \texttt{ServerSocket}(\texttt{port})
+        \EndProcedure
+        \Procedure{start}{}
+            \While {not stopped}
+                \State accept a socket
+                \State let the handler to handle the socket
+            \EndWhile
+            \State \vdots
+        \EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+    \caption{class \texttt{ServerClientHandler}}
+	\begin{algorithmic}
+        \Procedure {ServerClientHandler}{\texttt{KVServer} \texttt{kvServer}, \texttt{int} \texttt{connections}}
+            \State this.\texttt{kvServer} $\leftarrow$ \texttt{kvServer}
+            \State this.\texttt{threadPool} $\leftarrow$ new \texttt{ThreadPool}(\texttt{connections})
+        \EndProcedure
+        \Procedure {handle}{\texttt{Socket} \texttt{client}}
+            \State \texttt{threadPool}.\texttt{addJob}(new \texttt{ClientHandler}(\texttt{client}))
+        \EndProcedure
+        \Procedure {ClientHandler.run}{}
+            \State \texttt{request} $\leftarrow$ new \texttt{KVMessage}(\texttt{client})
+            \If {type of put}
+                \State \texttt{kvServer}.\texttt{put}(\texttt{key}, \texttt{value})
+                \State construct success message
+            \ElsIf {type of get}
+                \State \texttt{value} $\leftarrow$ \texttt{kvServer}.\texttt{get}(\texttt{key})
+                \State construct response message
+            \ElsIf {type of del}
+                \State \texttt{kvServer}.\texttt{del}(\texttt{key})
+                \State construct success message
+            \Else
+                \State throw corresponding exception
+            \EndIf
+            \If {exception occur}
+                \State construct error message
+            \EndIf
+            \State send response
+        \EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+    \caption{class \texttt{ThreadPool}}
+	\begin{algorithmic}
+        \Procedure {ThreadPool}{int \texttt{size}}
+            \State \vdots
+            \State \texttt{jobQueue} $leftarrow$ new \texttt{BlockingQueue<Runnable>}()
+            \For {\texttt{i} from 0 to \texttt{size}-1}
+                \State \texttt{threads[i]} $\leftarrow$ new \texttt{WorkerThread}()
+                \State \texttt{threads[i]}.\texttt{start}()
+            \EndFor
+        \EndProcedure
+        \Procedure {addJob}{\texttt{Runnable} \texttt{r}}
+            \State \texttt{jobQueue}.\texttt{put}(\texttt{r})
+        \EndProcedure
+        \Procedure {getJob}{}
+            \State \Return \texttt{jobQueue}.\texttt{take}()
+        \EndProcedure
+        \Procedure {\texttt{WorkerThread}.run}{}
+            \While {true}
+                \State \texttt{threadPool}.\texttt{getJob}().\texttt{run}()
+            \EndWhile
+        \EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\subsection{Test}
+\end{document}
