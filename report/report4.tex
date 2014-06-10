@@ -65,7 +65,10 @@ Implement registration logic in \texttt{TPCRegistrationHandler}, \texttt{TPCSlav
 	\item Register slave server with master. 
 \end{compactitem}
 \subsection{Declaration}
-In this task, we don't need extra instance variables or class variables.
+In this task, we almost don't need extra instance variables or class variables. But for convennience,
+we define a regex expression in \texttt{TPCSlaveInfo}that 
+\texttt{Pattern SLAVE\_INFO\_REGEX = Pattern.compile(``\^(.*)@(.*):(.*)\$'')}.
+
 \subsection{Description}
 \begin{algorithm}
 	\caption{\texttt{class TPCRegistrationHandler}}
@@ -74,11 +77,64 @@ In this task, we don't need extra instance variables or class variables.
 			\State threadpool.addJob(\texttt{new RegistrationHandler}(slave))
 		\EndProcedure
 		\Procedure{RegistrationHandler.run}{}
-			\State
+			\State regMsg $\leftarrow$ \texttt{new KVMessage(slave)}
+			\State msg $\leftarrow$ \texttt{regMsg.getMessage()}
+			\If{!regMsg.getMsgType().equals(``register'')}
+				\State ackMsg $\leftarrow$ \texttt{new KVMessage(ERROR\_INVALID\_FORMAT)}
+				\State ackMsg.sendMessage(slave)
+				\State \Return
+			\EndIf
+			\State info $\leftarrow$ \texttt{new TPCSlaveInfo(msg)}
+			\State master.registerSlave(info)
+			\State newmsg $\leftarrow$ ``Successfully registered '' + msg;
+			\State ackMsg $\leftarrow$ \texttt{new KVMessage(RESP, newmsg)}
+			\State ackMsg.sendMessage(slave)
+			\State slave.close()
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\texttt{class TPCSlaveInfo}}
+	\begin{algorithmic}
+		\Procedure{TPCSlaveInfo}{String info}
+			\State slaveInfoMatcher $\leftarrow$ \texttt{SLAVE\_INFO\_REGEX..matcher(info)}
+			\If{!slaveInfoMatcher.matches()}
+				\State \texttt{throw new IllegelArgumentException()}
+			\EndIf
+			\State slaveID $\leftarrow$ \texttt{Long.parseLong(slaveInfoMatcher.group(1))}
+			\State hostname $\leftarrow$ \texttt{slaveInfoMatcher.group(2)}
+			\State port $\leftarrow$ \texttt{Integer.parseInt(slaveInfoMatcher.group(3))}
+		\EndProcedure
+		\Procedure{connectHost}{int timeout}
+			\State sock $\leftarrow$ \texttt{new Socket()}
+			\State sock.setSoTimeOut(timeout)
+			\State sock.connect(new InetSocketAddress(hostname, port), TIMEOUT\_MILLISECONDS)
+			\State \Return sock
+		\EndProcedure
+		\Procedure{closeHost}{Socket sock}
+			\State sock.close()
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\texttt{class TPCMasterHandler}}
+	\begin{algorithmic}
+		\Procedure{registerWiithMaster}{String masterHostname, SocketServer server}
+			\State master $\leftarrow$ \texttt{new Socket(masterHostname, 9090)}
+			\State regMsg $\leftarrow$ \texttt{new KVMessage(REGISTER, slaveID + ``@'' + server.getHostname()
+			+ ``:'' + server.getPort())}
+			\State regMsg.sendMessage(master)
+			\State respMsg $\leftarrow$ \texttt{new KVMessage(master)}
+			\State master.close()
 		\EndProcedure
 	\end{algorithmic}
 \end{algorithm}
 \subsection{Test}
+\begin{compactitem}
+	\item Test whether slave server can register successfully;
+	\item Test whether slave infomation are recorded correctly;
+	\item Test whether master can register slave successfully in \texttt{TPCMasterHandler}.
+\end{compactitem}
 
 \section{Task 3}
 \subsection{Overview}

@@ -45,11 +45,11 @@ public class TPCRegistrationHandler implements NetworkHandler {
     public void handle(Socket slave) {
         // implement me
     	try {
-			threadpool.addJob(new RegistrationHandler(slave));
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+				threadpool.addJob(new RegistrationHandler(slave));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     }
 
     /**
