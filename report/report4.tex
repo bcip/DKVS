@@ -141,6 +141,60 @@ we define a regex expression in \texttt{TPCSlaveInfo}that
 \subsection{Correctness Constraints}
 \subsection{Declaration}
 \subsection{Description}
+\begin{algorithm}
+	\caption{Task 3: \texttt{TPCMaster}}
+	\begin{algorithmic}
+		\Procedure{registerSlave}{TPCSlaveInfo slave}
+			\If{size of \texttt{slaves} reach \texttt{numSlaves}}
+				\State return
+			\EndIf
+			\If{map \texttt{slaves} exists \texttt{slave}'s ID}
+				\State update the ID at the map with \texttt{slave}
+			\Else
+				\State add ID and \texttt{slave} to map \texttt{slaves}
+			\EndIf
+		\EndProcedure
+		\Procedure{findFirstReplica}{String key}
+			\State hash key as \texttt{hashedKey}
+			\State in \texttt{slaves} celling \texttt{hashedKey}
+			\If{null}
+				\State celling \texttt{slaves} with \texttt{Long} min value
+			\EndIf
+			\State return the celling value
+		\EndProcedure
+		\Procedure{findSuccessor}{TPCSlaveInfo firstReplica}
+			\State in \texttt{slaves} higher \texttt{firstReplica}'s ID
+			\If{null}
+				\State celling \texttt{slaves} with \texttt{Long} min value
+			\EndIf
+			\State return the celling value
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{Task 3: \texttt{TPCClientHandler}}
+	\begin{algorithmic}
+		\Procedure{TPCClientHandler}{TPCMaster tpcMaster, int connections}
+			\State \texttt{this.tpcMaster} \leftarrow \texttt{tpcMaster}
+			\State \texttt{this.threadPool} \leftarrow \texttt{new ThreadPool(connections)}
+		\EndProcedure
+		\Procedure{handle}{Socket client}
+			\State add job \texttt{ClientHandler(client)} to \texttt{threadPool}
+		\EndProcedure
+		\Procedure{run}{()}
+			\State get \texttt{msg} from \texttt{client}
+			\If{\texttt{msg}'s type is GET}
+				\State \texttt{tpcMaster} handleGet with \texttt{msg}
+				\State set the return message with value returned
+				\State send the message to client
+			\ElseIf{\texttt{msg}'s type is PUT}
+				\State \texttt{tpcMaster} handleTPCRequest with \texttt{msg} and boolean true
+			\ElseIf{\texttt{msg}'s type is DEL}
+				\State \texttt{tpcMaster} handleTPCRequest with \texttt{msg} and boolean false
+			\EndIf
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
 \subsection{Test}
 
 \section{Task 4}
