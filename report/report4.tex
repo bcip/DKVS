@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings, xcolor}
+\usepackage{paralist}
+\usepackage{chngpage}
+\usepackage[colorlinks,linkcolor=black,anchorcolor=black,citecolor=black]{hyperref}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true
+  tabsize=3
+}
+
+\title{Project 4 - Distributed Key-Value Store}
+\author{
+Xie Yuanhang  \\   2011012344\and
+Kuang Zhonghong  \\   2011012357\and
+Li Qingyang   \\   2011012360 \and
+Yin Mingtian   \\   2011012362\and
+Wang Qinshi   \\   2012011311}
+
+\changetext{}{+1cm}{-0.5cm}{-0.5cm}{}
+
+\date{}
+\begin{document}
+\maketitle
+
+\setcounter{section}{-1}
+ \section{Repository URL}
+\texttt{https://github.com/bcip/KVS}
+
+\section{Task 1}
+\subsection{Overview}
+\subsection{Correctness Constraints}
+\subsection{Declaration}
+\subsection{Description}
+\subsection{Test}
+
+\section{Task 2}
+\subsection{Overview}
+Implement registration logic in \texttt{TPCRegistrationHandler}, \texttt{TPCSlaveInfo}, and 
+\texttt{TPCMasterHandler.registerWithMaster}.
+\subsection{Correctness Constraints}
+\begin{compactitem}
+	\item Asynchronously handle the socket connections. Use threadpool to ensure that none of its methods are
+		blocking.
+	\item Maintain infomation about \texttt{SlaveServer} in \texttt{SlaveInfo}.
+	\item Register slave server with master. 
+\end{compactitem}
+\subsection{Declaration}
+In this task, we don't need extra instance variables or class variables.
+\subsection{Description}
+\begin{algorithm}
+	\caption{\texttt{class TPCRegistrationHandler}}
+	\begin{algorithmic}
+		\Procedure{handle}{\texttt{Socket} slave}
+			\State threadpool.addJob(\texttt{new RegistrationHandler}(slave))
+		\EndProcedure
+		\Procedure{RegistrationHandler.run}{}
+			\State
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\subsection{Test}
+
+\section{Task 3}
+\subsection{Overview}
+\subsection{Correctness Constraints}
+\subsection{Declaration}
+\subsection{Description}
+\subsection{Test}
+
+\section{Task 4}
+\subsection{Overview}
+\subsection{Correctness Constraints}
+\subsection{Declaration}
+\subsection{Description}
+\subsection{Test}
+
+\section{Task 5}
+\subsection{Overview}
+\subsection{Correctness Constraints}
+\subsection{Declaration}
+\subsection{Description}
+\subsection{Test}
+\end{document}
