@@ -5,13 +5,16 @@ import static kvstore.KVConstants.*;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TPCMaster {
 
     private int numSlaves;
     private KVCache masterCache;
     
-    private TreeMap<Long, TPCSlaveInfo> slaves;
+	private TreeMap<Long, TPCSlaveInfo> slaves
+			= new TreeMap<Long, TPCSlaveInfo>(new SlaveIDComparator());
+    private ReentrantLock slavesLock = new ReentrantLock();
 
     public static final int TIMEOUT = 3000;
 
@@ -35,7 +38,15 @@ public class TPCMaster {
      * @param slave the slaveInfo to be registered
      */
     public void registerSlave(TPCSlaveInfo slave) {
-        // implement me
+        slavesLock.lock();
+        try{
+        	slaves.put(slave.getSlaveID(), slave);
+        	if(slaves.size() == numSlaves)
+        		slaves.notifyAll();
+        }
+        finally{
+        	slavesLock.unlock();
+        }
     }
 
     /**
@@ -77,6 +88,18 @@ public class TPCMaster {
     public static boolean isLessThanEqualUnsigned(long n1, long n2) {
         return isLessThanUnsigned(n1, n2) || (n1 == n2);
     }
+    
+    public TPCSlaveInfo findFirstReplica(long hashCode) {
+        slavesLock.lock();
+        try{;
+        	if(slaves.ceilingEntry(new Long(hashCode)) != null)
+        		return slaves.ceilingEntry(new Long(hashCode)).getValue();
+        	return slaves.firstEntry().getValue();
+        }
+        finally{
+        	slavesLock.unlock();
+        }
+    }
 
     /**
      * Find primary replica for a given key.
@@ -85,8 +108,7 @@ public class TPCMaster {
      * @return SlaveInfo of first replica
      */
     public TPCSlaveInfo findFirstReplica(String key) {
-        // implement me
-        return null;
+        return findFirstReplica(hashTo64bit(key));
     }
 
     /**
@@ -96,8 +118,7 @@ public class TPCMaster {
      * @return SlaveInfo of successor replica
      */
     public TPCSlaveInfo findSuccessor(TPCSlaveInfo firstReplica) {
-        // implement me
-        return null;
+        return findFirstReplica(firstReplica.getSlaveID()+1);
     }
 
     /**
@@ -133,6 +154,17 @@ public class TPCMaster {
     public String handleGet(KVMessage msg) throws KVException {
         // implement me
         return null;
+    }
+    
+    public class SlaveIDComparator
+    	implements Comparator<Long>{
+    	public int compare(Long a, Long b){
+    		if(isLessThanUnsigned(a.longValue(), b.longValue()))
+    			return -1;
+    		if(isLessThanEqualUnsigned(a.longValue(), b.longValue()))
+    			return 0;
+    		return 1;
+    	}
     }
 
 }
