@@ -188,26 +188,33 @@ public class TPCMaster {
     			allGood = true;
     			for(int i = 0; i < slaves.length; i++){
     				if(!votes[i]){
-    					votes[i] = true;
     					try{
-	    					Socket socket = slaves[i].connectHost(TIMEOUT);
-	    					decision.sendMessage(socket);
-	    					KVMessage response = new KVMessage(socket);
-	    					if(!response.getMsgType().equals(ACK))
-	    						throw new KVException(ERROR_INVALID_FORMAT);
+	    					slaveSockets[i] = slaves[i].connectHost(TIMEOUT);
+	    					decision.sendMessage(slaveSockets[i]);
+	    					
     					}
     					catch (KVException e){
-    						if(e.getMessage().equals(ERROR_INVALID_FORMAT))
-    							throw e;
-    						votes[i] = false;
+    						slaveSockets[i] = null;
     						allGood = false;
     					}
+    				}
+    			}
+    			for(int i = 0; i < slaves.length; i++){
+    				if(!votes[i] && slaveSockets[i] != null){
+    					votes[i] = true;
+    					try{
+    						KVMessage response = new KVMessage(slaveSockets[i], TIMEOUT);
+    					}
+	    				catch (KVException e){
+							votes[i] = false;
+							allGood = false;
+	    				}
     				}
     			}
     		}
     		
     		if(decision.getMsgType().equals(ABORT))
-    			//TODO
+    			//TODO which error to throw?
     			throw new KVException(ERROR_COULD_NOT_RECEIVE_DATA);
 
     		if(isPutReq){
