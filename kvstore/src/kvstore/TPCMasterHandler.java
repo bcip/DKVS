@@ -78,7 +78,12 @@ public class TPCMasterHandler implements NetworkHandler {
      */
     @Override
     public void handle(Socket master) {
-        // implement me
+        try{
+        	threadpool.addJob(new MasterHandler(master));
+        }
+        catch (InterruptedException e){
+        	//ignore
+        }
     }
 
     /**
@@ -105,9 +110,57 @@ public class TPCMasterHandler implements NetworkHandler {
          */
         @Override
         public void run() {
-            // implement me
+        	KVMessage response = null;
+        	try{
+        		KVMessage request = new KVMessage(master);
+        		if(request.getMsgType().equals(GET_REQ)){
+        			String key = request.getKey();
+        			String value = kvServer.get(key);
+        			response = new KVMessage(RESP);
+        			response.setKey(key);
+        			response.setValue(value);
+        		}
+        		else if(response.getMsgType().equals(DEL_REQ)
+        				|| response.getMsgType().equals(PUT_REQ)){
+        			tpcLog.appendAndFlush(request);
+        			//TODO
+        		}
+        		if(request.getMsgType().equals(ABORT)){
+        			tpcLog.appendAndFlush(request);
+        			response = new KVMessage(ACK);
+        		}
+        		else if(request.getMsgType().equals(COMMIT)){
+        			tpcLog.appendAndFlush(request);
+        			request = tpcLog.getLastEntry();
+        			if(request.getMsgType().equals(DEL_REQ)){
+        				String key = request.getKey();
+        				kvServer.del(key);
+        				response = new KVMessage(ACK);
+        			}
+        			else if(request.getMsgType().equals(PUT_REQ)){
+        				String key = request.getKey();
+        				String value = request.getValue();
+        				kvServer.put(key, value);
+        				response = new KVMessage(ACK);
+        			}
+        			else{
+        				assert(false);
+        			}
+        		}
+        		else{
+        			throw new KVException(ERROR_INVALID_FORMAT);
+        		}
+        	}
+        	catch (KVException e){
+        		response = e.getKVMessage();
+        	}
+        	
+        	try{
+        		response.sendMessage(master);
+        	}
+        	catch (KVException e){
+        		//ignore
+        	}
         }
-
     }
-
 }

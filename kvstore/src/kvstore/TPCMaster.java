@@ -204,6 +204,7 @@ public class TPCMaster {
     					votes[i] = true;
     					try{
     						KVMessage response = new KVMessage(slaveSockets[i], TIMEOUT);
+    						assert(response.getMsgType().equals(ACK));
     					}
 	    				catch (KVException e){
 							votes[i] = false;
