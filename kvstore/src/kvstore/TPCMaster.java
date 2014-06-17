@@ -90,8 +90,9 @@ public class TPCMaster {
     }
     
     public TPCSlaveInfo findFirstReplica(long hashCode) {
+    	//TODO
         slavesLock.lock();
-        try{;
+        try{
         	if(slaves.ceilingEntry(new Long(hashCode)) != null)
         		return slaves.ceilingEntry(new Long(hashCode)).getValue();
         	return slaves.firstEntry().getValue();
@@ -120,6 +121,13 @@ public class TPCMaster {
     public TPCSlaveInfo findSuccessor(TPCSlaveInfo firstReplica) {
         return findFirstReplica(firstReplica.getSlaveID()+1);
     }
+    
+    public TPCSlaveInfo[] findCorrespondingSlaves(String key){
+    	TPCSlaveInfo[] slaves = new TPCSlaveInfo[2];
+    	slaves[0] = findFirstReplica(key);
+    	slaves[1] = findSuccessor(slaves[0]);
+    	return slaves;
+    }
 
     /**
      * Perform 2PC operations from the master node perspective. This method
@@ -134,7 +142,106 @@ public class TPCMaster {
      */
     public synchronized void handleTPCRequest(KVMessage msg, boolean isPutReq)
             throws KVException {
-        // implement me
+
+    	String key = msg.getKey();
+    	String value = null;
+    	if(isPutReq)
+    		value = msg.getValue();
+    	masterCache.getLock(key).lock();
+    	try{
+    		TPCSlaveInfo[] slaves = findCorrespondingSlaves(key);
+    		Socket[] slaveSockets = new Socket[slaves.length];
+    		boolean[] votes = new boolean[slaves.length];
+    		
+    		for(int i = 0; i < slaves.length; i++){
+    			slaveSockets[i] = slaves[i].connectHost(TIMEOUT);
+    		}
+    		
+    		for(int i = 0; i < slaves.length; i++){
+    			try{
+    				KVMessage response = new KVMessage(slaveSockets[i], TIMEOUT);
+    				if(response.getMsgType().equals(READY))
+    					votes[i] = true;
+    			}
+    			catch(KVException e){
+    				//ignore
+    			}
+    		}
+    		
+    		boolean allGood = true;
+    		for(int i = 0; i < slaves.length; i++)
+    			if(votes[i] == false)
+    				allGood = false;
+    		
+    		Arrays.fill(votes, false);
+    		
+    		KVMessage decision = null;
+    		if(allGood){
+    			decision = new KVMessage(COMMIT);
+    		}
+    		else{
+    			decision = new KVMessage(ABORT);
+    		}
+    		
+    		allGood = false;
+    		while(!allGood){
+    			allGood = true;
+    			for(int i = 0; i < slaves.length; i++){
+    				if(!votes[i]){
+    					votes[i] = true;
+    					try{
+	    					Socket socket = slaves[i].connectHost(TIMEOUT);
+	    					decision.sendMessage(socket);
+	    					KVMessage response = new KVMessage(socket);
+	    					if(!response.getMsgType().equals(ACK))
+	    						throw new KVException(ERROR_INVALID_FORMAT);
+    					}
+    					catch (KVException e){
+    						if(e.getMessage().equals(ERROR_INVALID_FORMAT))
+    							throw e;
+    						votes[i] = false;
+    						allGood = false;
+    					}
+    				}
+    			}
+    		}
+    		
+    		if(decision.getMsgType().equals(ABORT))
+    			//TODO
+    			throw new KVException(ERROR_COULD_NOT_RECEIVE_DATA);
+
+    		if(isPutReq){
+    			masterCache.put(key, value);
+    		}
+    		else{
+    			masterCache.del(value);
+    		}
+    	}
+    	finally{
+    		masterCache.getLock(key).unlock();
+    	}
+    }
+    
+    
+    /**
+     * Try to get the value from the slave
+     * @param slave
+     * @param msg
+     * @return value if success,
+     * 		null otherwise
+     */
+    public String getFromSlave(TPCSlaveInfo slave, KVMessage msg) {
+    	try{
+    		Socket slaveSocket = slave.connectHost(TIMEOUT);
+    		msg.sendMessage(slaveSocket);
+    		KVMessage response = new KVMessage(slaveSocket);
+    		if(response.getMsgType().equals(SUCCESS))
+    			throw new KVException(response);
+    		return response.getValue();
+    	}
+    	catch (KVException e){
+    		return null;
+    	}
     }
 
     /**
@@ -153,7 +260,33 @@ public class TPCMaster {
      */
     public String handleGet(KVMessage msg) throws KVException {
         // implement me
-        return null;
+    	String key = msg.getKey();
+    	String value = null;
+    	
+    	masterCache.getLock(key).lock();
+    	try{
+        	value = masterCache.get(key);
+        	if(value != null)
+        		return value;
+        	
+        	TPCSlaveInfo[] slaves = findCorrespondingSlaves(key);
+        	
+        	for(TPCSlaveInfo slave : slaves){
+        		value = getFromSlave(slave, msg);
+        		if(value != null)
+        			break;
+        	}
+        	
+        	if(value == null)
+        		throw new KVException(ERROR_NO_SUCH_KEY);
+        	
+        	masterCache.put(key, value);
+    	}
+    	finally{
+    		masterCache.getLock(key).unlock();
+    	}
+    	
+    	return value;
     }
     
     public class SlaveIDComparator

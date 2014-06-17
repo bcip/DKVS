@@ -30,7 +30,8 @@ public class TPCClientHandler implements NetworkHandler {
      * @param connections number of threads in threadPool to service requests
      */
     public TPCClientHandler(TPCMaster tpcMaster, int connections) {
-        // implement me
+        this.tpcMaster = tpcMaster;
+        this.threadPool = new ThreadPool(connections);
     }
 
     /**
@@ -41,7 +42,12 @@ public class TPCClientHandler implements NetworkHandler {
      */
     @Override
     public void handle(Socket client) {
-        // implement me
+    	try{
+    		threadPool.addJob(new ClientHandler(client));
+    	}
+    	catch (InterruptedException e){
+    		//ignore
+    	}
     }
 
     /**
@@ -67,7 +73,42 @@ public class TPCClientHandler implements NetworkHandler {
          */
         @Override
         public void run() {
-            // implement me
+        	KVMessage response = null;
+        	try{
+        		KVMessage request = new KVMessage(client);
+        		if(request.getMsgType().equals(PUT_REQ)){
+        			tpcMaster.handleTPCRequest(request, true);
+        			
+        			response = new KVMessage(RESP, SUCCESS);
+        		}
+        		else if(request.getMsgType().equals(GET_REQ)){
+        			String key = request.getKey();
+        			String value = tpcMaster.handleGet(request);
+        			
+        			response = new KVMessage(RESP);
+        			response.setKey(key);
+        			response.setValue(value);
+        		}
+        		else if(request.getMsgType().equals(DEL_REQ)){
+        			tpcMaster.handleTPCRequest(request, false);
+        			
+        			response = new KVMessage(RESP, SUCCESS);
+        		}
+        		else{
+        			throw new KVException(ERROR_INVALID_FORMAT);
+        		}
+        	}
+        	catch(KVException e){
+        		response = e.getKVMessage();
+        	}
+        	finally{
+        		try{
+        			response.sendMessage(client);
+        		}
+        		catch(Exception e){
+        			//ignore
+        		}
+        	}
         }
     }
 
