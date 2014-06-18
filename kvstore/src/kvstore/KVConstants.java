@@ -17,6 +17,7 @@ public class KVConstants {
 
     // Timeout value used during 2PC operations
     public static final int TIMEOUT_MILLISECONDS = 2000;
+    
 
     /**
      * Error message used if an IOException arises while parsing the

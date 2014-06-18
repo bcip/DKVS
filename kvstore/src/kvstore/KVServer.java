@@ -81,7 +81,7 @@ public class KVServer implements KeyValueInterface {
     	checkKey(key);
     	checkValue(value);
     	
-    	dataCache.getLock(key).lock();
+    	dataCache.getLock(key).writeLock().lock();
     	try{
     		dataCache.put(key, value);
     		storeLock.lock();
@@ -91,7 +91,7 @@ public class KVServer implements KeyValueInterface {
     			storeLock.unlock();
     		}
     	}finally{
-    		dataCache.getLock(key).unlock();
+    		dataCache.getLock(key).writeLock().unlock();
     	}
     }
 
@@ -107,7 +107,7 @@ public class KVServer implements KeyValueInterface {
     public String get(String key) throws KVException {
         // implement me
     	checkKey(key);
-    	dataCache.getLock(key).lock();
+    	dataCache.getLock(key).readLock().lock();
     	
     	try{
     		String value = dataCache.get(key);
@@ -122,7 +122,7 @@ public class KVServer implements KeyValueInterface {
     		}
     		return value;
     	}finally{
-    		dataCache.getLock(key).unlock();
+    		dataCache.getLock(key).readLock().unlock();
     	}
     }
 
@@ -136,7 +136,7 @@ public class KVServer implements KeyValueInterface {
     public void del(String key) throws KVException {
         // implement me
     	checkKey(key);
-    	dataCache.getLock(key).lock();
+    	dataCache.getLock(key).writeLock().lock();
     	
     	try{
     		storeLock.lock();
@@ -149,7 +149,7 @@ public class KVServer implements KeyValueInterface {
     			storeLock.unlock();
     		}
     	}finally{
-    		dataCache.getLock(key).unlock();
+    		dataCache.getLock(key).writeLock().unlock();
     	}
     }
 

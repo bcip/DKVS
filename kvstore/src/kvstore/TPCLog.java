@@ -12,7 +12,7 @@ public class TPCLog {
     private String logPath;
     private KVServer kvServer;
     private ArrayList<KVMessage> entries;
-
+    private KVMessage operation = null; // keep track of interrupted 2PC operation
     /**
      * Constructs a TPCLog to log KVMessages from the master.
      *
@@ -108,7 +108,6 @@ public class TPCLog {
     public void rebuildServer() throws KVException {
         // implement me
     	boolean isCommit = false;
-    	KVMessage operation = null;
     	loadFromDisk();
     	for(KVMessage entry : entries){
     		if (entry.getMsgType().equals(KVConstants.PUT_REQ)
@@ -122,7 +121,7 @@ public class TPCLog {
     			if (isCommit && operation != null){
     				if (operation.getMsgType().equals(KVConstants.PUT_REQ)){
     					kvServer.put(operation.getKey(), operation.getValue());
-    				}else{
+    				}else if (operation.getMsgType().equals(KVConstants.DEL_REQ)){
     					kvServer.del(operation.getKey());
     				}
     			}

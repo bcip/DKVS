@@ -53,6 +53,11 @@ public class TPCSlaveInfo {
         return port;
     }
 
+    public void updateInfo(String _hostname, int _port) {
+    	hostname = _hostname;
+    	port = _port;
+    }
+    
     /**
      * Create and connect a socket within a certain timeout.
      *
