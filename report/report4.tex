@@ -44,14 +44,52 @@ Wang Qinshi   \\   2012011311}
 
 \setcounter{section}{-1}
  \section{Repository URL}
-\texttt{https://github.com/bcip/KVS}
+\texttt{https://github.com/YMT11/DKVS}
 
 \section{Task 1}
 \subsection{Overview}
+Modify \texttt{KVMessage} to allow two-phase commit messages. Finish \texttt{TCPLog} class to log transactions 
+and rebuild the server during recovery.
 \subsection{Correctness Constraints}
+\begin{compactitem}
+	\item Add new message types in \texttt{KVMessage}
+	\item Implement \texttt{TPCLog} to recover the system.
+\end{compactitem}
 \subsection{Declaration}
+\texttt{KVMessage} \texttt{operation} to keep track of interrupted 2PC operation.
 \subsection{Description}
+In \texttt{KVMessage}, we only add support for new message types.
+\begin{algorithm}
+	\caption{\texttt{class TCPLog}}
+	\begin{algorithmic}
+		\Procedure{rebuildServer}{ }
+			\State \texttt{isCommit} $\leftarrow$ \texttt{false}
+			\State \texttt{loadFromDisk()}
+			\For{\texttt{entry} in \texttt{entries}}
+				\If{is \texttt{PUT\_REQ} or \texttt{DEL\_REQ}}
+					\State \texttt{operation} $\leftarrow$ \texttt{entry}
+				\ElsIf{is \texttt{COMMIT}}
+					\State \texttt{isCommit} $\leftarrow$ \texttt{true}
+				\ElsIf{is \texttt{ABORT}}
+					\State \texttt{isCommit} $\leftarrow$ \texttt{false}
+				\ElsIf{is \texttt{ACK}}
+					\If{\texttt{operation} type is \texttt{PUT\_REQ}}
+						\State \texttt{kvserver.put}
+					\ElsIf{\texttt{operation} type is \texttt{DEL\_REQ}}
+						\State \texttt{kvserver.del}
+					\EndIf
+					\State \texttt{operation} $\leftarrow$ \texttt{null}
+				\EndIf
+			\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
 \subsection{Test}
+\begin{compactitem}
+	\item Test new format of xml messages
+	\item Test whether recover from logs correctly.
+\end{compactitem}
 
 \section{Task 2}
 \subsection{Overview}
@@ -66,7 +104,7 @@ Implement registration logic in \texttt{TPCRegistrationHandler}, \texttt{TPCSlav
 \end{compactitem}
 \subsection{Declaration}
 In this task, we almost don't need extra instance variables or class variables. But for convennience,
-we define a regex expression in \texttt{TPCSlaveInfo}that 
+we define a regex expression in \texttt{TPCSlaveInfo} that  \\
 \texttt{Pattern SLAVE\_INFO\_REGEX = Pattern.compile(``\^(.*)@(.*):(.*)\$'')}.
 
 \subsection{Description}
@@ -107,8 +145,8 @@ we define a regex expression in \texttt{TPCSlaveInfo}that
 		\EndProcedure
 		\Procedure{connectHost}{int timeout}
 			\State sock $\leftarrow$ \texttt{new Socket()}
-			\State sock.setSoTimeOut(timeout)
-			\State sock.connect(new InetSocketAddress(hostname, port), TIMEOUT\_MILLISECONDS)
+			\State \texttt{sock.setSoTimeOut(timeout)}
+			\State \texttt{sock.connect(new InetSocketAddress(hostname, port), TIMEOUT\_MILLISECONDS)}
 			\State \Return sock
 		\EndProcedure
 		\Procedure{closeHost}{Socket sock}
@@ -121,7 +159,8 @@ we define a regex expression in \texttt{TPCSlaveInfo}that
 	\begin{algorithmic}
 		\Procedure{registerWiithMaster}{String masterHostname, SocketServer server}
 			\State master $\leftarrow$ \texttt{new Socket(masterHostname, 9090)}
-			\State regMsg $\leftarrow$ \texttt{new KVMessage(REGISTER, slaveID + ``@'' + server.getHostname()
+			\State regMsg $\leftarrow$ \texttt{new KVMessage(REGISTER, 
+			\State	slaveID + ``@'' + server.getHostname()
 			+ ``:'' + server.getPort())}
 			\State regMsg.sendMessage(master)
 			\State respMsg $\leftarrow$ \texttt{new KVMessage(master)}
@@ -138,76 +177,232 @@ we define a regex expression in \texttt{TPCSlaveInfo}that
 
 \section{Task 3}
 \subsection{Overview}
+Implement consistent hashing in \texttt{TPCMaster} to find the slaves involved in a transaction and implement \texttt{TPCClientHandler}.
 \subsection{Correctness Constraints}
+\begin{compactitem}
+	\item Offer \texttt{slaves} a \texttt{comparator} in \texttt{TPCMaster}
+	\item Implement the location in consistent hashing in \texttt{TPCMaster}
+	\item Implement the \texttt{TPCClientHandler} by calling methods in \texttt{tpcmaster} to handle requests.
+\end{compactitem}
 \subsection{Declaration}
+\begin{compactitem}
+	\item New \texttt{class ULComp} which implements \texttt{Comparator<Long>} for \texttt{TreeMap}.
+\end{compactitem}
 \subsection{Description}
 \begin{algorithm}
-	\caption{Task 3: \texttt{TPCMaster}}
+	\caption{\texttt{class TPCMaster}}
 	\begin{algorithmic}
-		\Procedure{registerSlave}{TPCSlaveInfo slave}
-			\If{size of \texttt{slaves} reach \texttt{numSlaves}}
-				\State return
-			\EndIf
-			\If{map \texttt{slaves} exists \texttt{slave}'s ID}
-				\State update the ID at the map with \texttt{slave}
+		\Procedure{ULComp.compare}{Long l1, Long l2}
+		\If{isLessThanUnsigned(l1, l2)}
+		\State \Return -1
+		\Else
+			\If{isLessThanUnsigned(l2, l1)}
+				\State \Return 1
 			\Else
-				\State add ID and \texttt{slave} to map \texttt{slaves}
+				\State \Return 0
+			\EndIf
+		\EndIf
+		\EndProcedure
+		\Procedure{registerSlave}{\texttt{TPCSlaveInfo slave}}	
+			\State \texttt{id} $\leftarrow$ \texttt{slave.getSlaveID}
+			\State \texttt{synchronized} \texttt{slaves} to update \texttt{TPCSlaveInfo} if \texttt{id} already exists
+			\State \texttt{synchronized} \texttt{slaves} to insert \texttt{slave} if \texttt{id} does not exist.
+		\EndProcedure
+		\Procedure{findFirstReplica}{\texttt{String key}}
+			\State \texttt{id} $\leftarrow$ \texttt{new Long(hashTo64bit(key)}
+			\State \texttt{sid} $\leftarrow$ \texttt{slaves.ceilingKey(id)}
+			\If{\texttt{sid != null}}
+				\State \Return \texttt{slaves.get(sid)}
+			\Else
+				\State \Return \texttt{slaves.firstEntry().getValue()}
 			\EndIf
 		\EndProcedure
-		\Procedure{findFirstReplica}{String key}
-			\State hash key as \texttt{hashedKey}
-			\State in \texttt{slaves} celling \texttt{hashedKey}
-			\If{null}
-				\State celling \texttt{slaves} with \texttt{Long} min value
+		\Procedure{findSuccessor}{\texttt{TPCSlaveInfo firstReplica}}
+			\State \texttt{id} $\leftarrow$ \texttt{new Long(firstReplica.getSlaveID())}
+			\State \texttt{sid} $\leftarrow$ \texttt{slaves.ceilingKey(id)}
+			\If{\texttt{sid != null}}
+				\State \Return \texttt{slaves.get(sid)}
+			\Else
+				\State \Return \texttt{slaves.firstEntry().getValue()}
 			\EndIf
-			\State return the celling value
-		\EndProcedure
-		\Procedure{findSuccessor}{TPCSlaveInfo firstReplica}
-			\State in \texttt{slaves} higher \texttt{firstReplica}'s ID
-			\If{null}
-				\State celling \texttt{slaves} with \texttt{Long} min value
-			\EndIf
-			\State return the celling value
 		\EndProcedure
 	\end{algorithmic}
 \end{algorithm}
 \begin{algorithm}
-	\caption{Task 3: \texttt{TPCClientHandler}}
+	\caption{\texttt{class TPCClientHandler}}
 	\begin{algorithmic}
-		\Procedure{TPCClientHandler}{TPCMaster tpcMaster, int connections}
-			\State \texttt{this.tpcMaster} \leftarrow \texttt{tpcMaster}
-			\State \texttt{this.threadPool} \leftarrow \texttt{new ThreadPool(connections)}
-		\EndProcedure
-		\Procedure{handle}{Socket client}
-			\State add job \texttt{ClientHandler(client)} to \texttt{threadPool}
-		\EndProcedure
-		\Procedure{run}{()}
-			\State get \texttt{msg} from \texttt{client}
-			\If{\texttt{msg}'s type is GET}
-				\State \texttt{tpcMaster} handleGet with \texttt{msg}
-				\State set the return message with value returned
-				\State send the message to client
-			\ElseIf{\texttt{msg}'s type is PUT}
-				\State \texttt{tpcMaster} handleTPCRequest with \texttt{msg} and boolean true
-			\ElseIf{\texttt{msg}'s type is DEL}
-				\State \texttt{tpcMaster} handleTPCRequest with \texttt{msg} and boolean false
+		\Procedure{ClientHandler.run}{}
+			\State \texttt{reqMsg} $\leftarrow$ \texttt{new KVMessage(client)}
+			\If{\texttt{reqMsg} is TPC request}
+				\State \texttt{tpcmaster.handleTPCRequest(reqMsg, reqMsg.getMsgType.equals(PUT\_REQ))}
+			\Else
+				\State \texttt{tpcmaster.handleGet(reqMsg)}
 			\EndIf
+			\State \texttt{ackMsg} $\leftarrow$ \texttt{new KVMessage(ACK)}
+			\State \texttt{ackMsg.sendMessage(client)}
 		\EndProcedure
 	\end{algorithmic}
 \end{algorithm}
 \subsection{Test}
-
+\begin{compactitem}
+	\item Test whether the correctness location of consistent hashing: \texttt{findFirstReplica} and \texttt{findSuccessor};
+	\item Test whether the client handler calls the correct methods of \texttt{tpcmaster}
+\end{compactitem}
 \section{Task 4}
 \subsection{Overview}
+Implement the rest of \texttt{TPCMaster} for two-phase commit logic on the master node.
 \subsection{Correctness Constraints}
 \subsection{Declaration}
 \subsection{Description}
+\begin{algorithm}
+	\caption{\texttt{class TPCMaster}}
+	\begin{algorithmic}
+		\Procedure{getFromSlave}{\texttt{KVMessage msg, TPCSlaveInfo info, String key}}
+			\State \texttt{slaveSocket} $\leftarrow$ \texttt{info.connectHost(TIMEOUT\_MILLISECONDS)}
+			\State \texttt{msg.sendMessage(slaveSocket)}
+			\State \texttt{respMsg} $\leftarrow$ \texttt{new KVMessage(slaveSocket)}
+			\State \texttt{m} $\leftarrow$ \texttt{respMsg.getMessage()}
+			\If{m is ``Does not exist''}
+				\State \texttt{throw new KVException(new KVMessage(``Does not exist''))}
+			\EndIf
+			\State \texttt{value} $\leftarrow$ \texttt{respMsg.getValue()}
+			\State \texttt{info.closeHost(slaveSocket)}
+			\State \Return \texttt{value}
+		\EndProcedure
+		\Procedure{handleGet}{KVMessage msg}
+		\State \texttt{key} $\leftarrow$ \texttt{msg.getKey()}
+		\State \texttt{masterCache.getLock(key).readLock().lock()}
+		\State \texttt{value} $\leftarrow$ \texttt{masterCache.getValue(key)}
+		\If{value is not null}
+			\State \texttt{masterCache.getLock(key).readLock().unlock()}
+			\State \Return
+		\EndIf
+		\State \texttt{finfo} $\leftarrow$ \texttt{findFirstReplica(key)}
+		\State \texttt{fvalue} $\leftarrow$ \texttt{getFromSlave(msg, finfo, key)}
+		\If{fvalue is not null}
+			\State \texttt{masterCache.put(key, fvalue)}
+			\State \texttt{masterCache.getLock(key).readLock().unlock()}
+			\State \Return fvalue
+		\EndIf
+		\State \texttt{sinfo} $\leftarrow$ \texttt{findSuccessor(finfo)}
+		\State \texttt{svalue} $\leftarrow$ \texttt{getFromSlave(msg, sinfo, key)}
+		\If{svalue is not null}
+			\State \texttt{masterCache.put(key, svalue)}
+			\State \texttt{masterCache.getLock(key).readLock().unlock()}
+			\State \Return svalue
+		\Else
+			\State \texttt{throw new KVException(new KVMessage(``Does not exist''))}
+		\EndIf
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\texttt{class TPCMaster}}
+	\begin{algorithmic}
+		\Procedure{handleTPCRequest}{\texttt{KVMessage msg, boolean isPutReq}}
+			\State \texttt{key} $\leftarrow$ \texttt{msg.getKey()}
+			\State \texttt{value} $\leftarrow$ \texttt{null}
+			\If{isPutReq}
+				\State \texttt{value} $\leftarrow$ \texttt{msg.getValue()}
+    	\EndIf
+			\State \texttt{masterCache.getLock(key).writeLock().lock()}
+			\State \texttt{finfo} $\leftarrow$ \texttt{findFirstReplica(key)}
+			\State \texttt{sinfo} $\leftarrow$ \texttt{findSuccessor(finfo)}
+			\State \texttt{fsock} $\leftarrow$ \texttt{finfo.connectHost(TIMEOUT\_MILLISECONDS)}
+			\State \texttt{ssock} $\leftarrow$ \texttt{sinfo.connectHost(TIMEOUT\_MILLISECONDS)}
+    	\State \texttt{msg.sendMessage(fsock)}
+			\State \texttt{msg.sendMessage(ssock)}
+			\State \texttt{frespMsg} $\leftarrow$ \texttt{new KVMessage(fsock)}
+			\State \texttt{srespMsg} $\leftarrow$ \texttt{new KVMessage(ssock)}
+			\If{exception}
+				\State \texttt{finfo.closeHost(fsock)}
+				\State \texttt{sinfo.closeHost(ssock)}
+				\State \texttt{comMsg} $\leftarrow$ \texttt{new KVMessage(ABORT)}
+				\State \texttt{sendBack(finfo.getSlaveID(), comMsg)}
+				\State \texttt{sendBack(sinfo.getSlaveID(), comMsg)}
+				\State \texttt{throw exception}
+			\EndIf
+    	\If{\texttt{frespMsg.getMsgType().equals(READY)} and \texttt{srespMsg.getMsgType().equals(READY)}}
+				\State \texttt{comMsg} $\leftarrow$ \texttt{new KVMessage(COMMIT)}
+				\State \texttt{sendBack(finfo.getSlaveID(), comMsg)}
+				\State \texttt{sendBack(sinfo.getSlaveID(), comMsg)}
+    		\If{isPutReq}
+					\State \texttt{masterCache.put(key,value)}
+				\Else
+					\State \texttt{masterCache.del(key)}
+				\EndIf
+			\Else
+	    	\State \texttt{abortMsg} $\leftarrow$ \texttt{new KVMessage(ABORT)}
+	    	\State \texttt{sendBack(finfo.getSlaveID(), abortMsg)}
+    		\State \texttt{sendBack(sinfo.getSlaveID(), abortMsg)}
+				\State \texttt{masterCache.getLock(key).writeLock().unlock()}
+				\State \texttt{throw new KVException(new KVMessage(ABORT))}
+    	\EndIf
+			\State \texttt{finfo.closeHost(fsock)}
+			\State \texttt{sinfo.closeHost(ssock)}
+			\State \texttt{masterCache.getLock(key).writeLock().unlock()}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
 \subsection{Test}
+\begin{compactitem}
+	\item Test \texttt{GET} requests;
+	\item Test \texttt{PUT} and \texttt{DELETE} requests.
+\end{compactitem}
 
 \section{Task 5}
 \subsection{Overview}
+Implement \texttt{TPCMasterHandler} that handles TPC logic on the slave servers.
 \subsection{Correctness Constraints}
+\begin{compactitem}
+	\item Using two phase commit logic rules.
+\end{compactitem}
 \subsection{Declaration}
 \subsection{Description}
+\begin{algorithm}
+	\caption{\texttt{class TPCMasterHandler}}
+	\begin{algorithmic}
+		\Procedure{MasterHandler.run}{ }
+			\State \texttt{msMsg} $\leftarrow$ \texttt{new KVMessage(master)}
+			\State \texttt{respMsg} $\leftarrow$ \texttt{new KVMessage(READY)}
+			\State \texttt{msgType} $\leftarrow$ \texttt{msMsg.getMsgType}
+			\If{msgType is PUT\_REQ}
+				\State if invalid key or value, \texttt{respMsg} $\leftarrow$ \texttt{KVMessage(ABORT)}
+			\ElsIf{msgType is DEL\_REQ}
+				\State if invalid key, \texttt{respMsg} $\leftarrow$ \texttt{KVMessage(ABORT)}
+			\ElsIf{msgType is GET\_REQ}
+				\State if invalid key, \texttt{respMsg} $\leftarrow$ \texttt{KVMessage(ABORT)}
+				\State \texttt{kvServer.get(msMsg.getKey)}
+				\State if something wrong, \texttt{respMsg} $\leftarrow$ \texttt{KVMessage(ABORT)}
+			\EndIf
+			\State \texttt{tpcLog.appendAndFlush(msMsg)}
+			\State \texttt{respMsg.sendMessage(master)}
+			\State
+			\State \texttt{decMsg} $\leftarrow$ \texttt{new KVMessage(master)}
+			\State \texttt{ackMsg} $\leftarrow$ \texttt{new KVMessage(ACK, SUCCESS)}
+			\State \texttt{decType} $\leftarrow$ \texttt{decMsg.getMsgType}
+			\State \texttt{msType} $\leftarrow$ \texttt{decMsg.getMsgType}
+			\If{decType is COMMIT}
+				\If{msType is PUT\_REQ}
+					\State \texttt{kvServer.put(msMsg.getKey(), msMsg.getValue())}
+				\ElsIf{msType is DEL\_REQ}
+					\State \texttt{kvServer.del(msMsg.getKey())}
+				\ElsIf{msType is GET\_REQ}
+					\State \texttt{ackMsg.setKey(msMsg.getKey())}
+					\State \texttt{ackMsg.setValue(msMsg.getValue())}
+				\EndIf
+			\ElsIf{decType is ABORT}
+			\Else
+				\State \texttt{throw new KVException(ERROR\_INVALID\_FORMAT)}
+			\EndIf
+			\State \texttt{tpcLog.appendAndFlush(decMsg)}
+			\State \texttt{ackMsg.sendMessage(master)}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
 \subsection{Test}
+\begin{compactitem}
+	\item Overall test using \texttt{TPCEndToEndTest}
+	\item Test \texttt{Get, Put, Del} cases and cases with exceptions such as invalid keys and values.
+\end{compactitem}
 \end{document}
