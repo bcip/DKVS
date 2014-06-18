@@ -118,7 +118,7 @@ public class KVServer implements KeyValueInterface {
     			}finally{
     				storeLock.unlock();
     			}
-    			dataStore.put(key, value);
+    			dataCache.put(key, value);
     		}
     		return value;
     	}finally{
