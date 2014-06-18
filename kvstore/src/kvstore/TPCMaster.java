@@ -147,7 +147,7 @@ public class TPCMaster {
     	String value = null;
     	if(isPutReq)
     		value = msg.getValue();
-    	masterCache.getLock(key).lock();
+    	masterCache.getLock(key).writeLock().lock();
     	try{
     		TPCSlaveInfo[] slaves = findCorrespondingSlaves(key);
     		Socket[] slaveSockets = new Socket[slaves.length];
@@ -226,7 +226,7 @@ public class TPCMaster {
     		}
     	}
     	finally{
-    		masterCache.getLock(key).unlock();
+    		masterCache.getLock(key).writeLock().unlock();
     	}
     }
     
@@ -271,7 +271,7 @@ public class TPCMaster {
     	String key = msg.getKey();
     	String value = null;
     	
-    	masterCache.getLock(key).lock();
+    	masterCache.getLock(key).readLock().lock();
     	try{
         	value = masterCache.get(key);
         	if(value != null)
@@ -291,7 +291,7 @@ public class TPCMaster {
         	masterCache.put(key, value);
     	}
     	finally{
-    		masterCache.getLock(key).unlock();
+    		masterCache.getLock(key).readLock().unlock();
     	}
     	
     	return value;
