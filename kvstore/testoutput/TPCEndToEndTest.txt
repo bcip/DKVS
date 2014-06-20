@@ -1,0 +1,55 @@
+		[junit] Testsuite: kvstore.TPCEndToEndTest
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="register">
+    [junit] <Message>4611686018427387903@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="resp">
+    [junit] <Message>Successfully registered 4611686018427387903@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="register">
+    [junit] <Message>9223372036854775807@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="resp">
+    [junit] <Message>Successfully registered 9223372036854775807@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="register">
+    [junit] <Message>-4611686018427387903@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="resp">
+    [junit] <Message>Successfully registered -4611686018427387903@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="register">
+    [junit] <Message>-1@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="resp">
+    [junit] <Message>Successfully registered -1@127.0.0.1:0</Message>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    [junit] <KVMessage type="putreq">
+    [junit] <Key>foo</Key>
+    [junit] <Value>bar</Value>
+    [junit] </KVMessage>
+    [junit] 
+    [junit] Tests run: 1, Failures: 0, Errors: 1, Time elapsed: 17 sec
+    [junit] 
+    [junit] Testcase: testPutGet took 16.987 sec
+    [junit] 	Caused an ERROR
+    [junit] test timed out after 15000 milliseconds
+    [junit] java.lang.Exception: test timed out after 15000 milliseconds
+    [junit] 
+
