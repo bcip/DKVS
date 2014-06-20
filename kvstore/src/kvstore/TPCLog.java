@@ -1,5 +1,7 @@
 package kvstore;
 
+import static kvstore.KVConstants.*;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -107,25 +109,26 @@ public class TPCLog {
      */
     public void rebuildServer() throws KVException {
         // implement me
-    	boolean isCommit = false;
     	loadFromDisk();
     	for(KVMessage entry : entries){
-    		if (entry.getMsgType().equals(KVConstants.PUT_REQ)
-    				|| entry.getMsgType().equals(KVConstants.DEL_REQ)){
+    		if (entry.getMsgType().equals(PUT_REQ)
+    				|| entry.getMsgType().equals(DEL_REQ)){
     			operation = entry;
-    		} else if (entry.getMsgType().equals(KVConstants.COMMIT)){
-    			isCommit = true;
-    		} else if (entry.getMsgType().equals(KVConstants.ABORT)){
-    			isCommit = false;
-    		} else if (entry.getMsgType().equals(KVConstants.ACK)){
-    			if (isCommit && operation != null){
-    				if (operation.getMsgType().equals(KVConstants.PUT_REQ)){
-    					kvServer.put(operation.getKey(), operation.getValue());
-    				}else if (operation.getMsgType().equals(KVConstants.DEL_REQ)){
-    					kvServer.del(operation.getKey());
-    				}
+    		} else if (entry.getMsgType().equals(COMMIT)){
+    			if(operation != null){
+	    			if(operation.getMsgType().equals(PUT_REQ)){
+	    				kvServer.put(operation.getKey(), operation.getValue());
+	    			} else if(operation.getMsgType().equals(DEL_REQ)) {
+	    				kvServer.del(operation.getKey());
+	    			} else {
+	    				assert(false);
+	    			}
     			}
     			operation = null;
+    		} else if (entry.getMsgType().equals(KVConstants.ABORT)){
+    			operation = null;
+    		} else {
+    			assert(false);
     		}
     	}
     }

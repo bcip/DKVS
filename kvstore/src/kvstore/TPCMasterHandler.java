@@ -120,10 +120,9 @@ public class TPCMasterHandler implements NetworkHandler {
         			response.setKey(key);
         			response.setValue(value);
         		}
-        		else if(response.getMsgType().equals(DEL_REQ)
-        				|| response.getMsgType().equals(PUT_REQ)){
+        		else if(request.getMsgType().equals(DEL_REQ)
+        				|| request.getMsgType().equals(PUT_REQ)){
         			tpcLog.appendAndFlush(request);
-        			//TODO
         		}
         		if(request.getMsgType().equals(ABORT)){
         			tpcLog.appendAndFlush(request);
@@ -135,17 +134,13 @@ public class TPCMasterHandler implements NetworkHandler {
         			if(request.getMsgType().equals(DEL_REQ)){
         				String key = request.getKey();
         				kvServer.del(key);
-        				response = new KVMessage(ACK);
         			}
         			else if(request.getMsgType().equals(PUT_REQ)){
         				String key = request.getKey();
         				String value = request.getValue();
         				kvServer.put(key, value);
-        				response = new KVMessage(ACK);
         			}
-        			else{
-        				assert(false);
-        			}
+    				response = new KVMessage(ACK);
         		}
         		else{
         			throw new KVException(ERROR_INVALID_FORMAT);

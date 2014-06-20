@@ -11,7 +11,7 @@ import java.net.Socket;
  */
 public class TPCRegistrationHandler implements NetworkHandler {
 
-    private ThreadPool threadpool;
+    private ThreadPool threadPool;
     private TPCMaster master;
 
     /**
@@ -31,7 +31,7 @@ public class TPCRegistrationHandler implements NetworkHandler {
      * @param connections number of threads in threadPool to service requests
      */
     public TPCRegistrationHandler(TPCMaster master, int connections) {
-        this.threadpool = new ThreadPool(connections);
+        this.threadPool = new ThreadPool(connections);
         this.master = master;
     }
 
@@ -45,7 +45,7 @@ public class TPCRegistrationHandler implements NetworkHandler {
     public void handle(Socket slave) {
         // implement me
     	try {
-				threadpool.addJob(new RegistrationHandler(slave));
+				threadPool.addJob(new RegistrationHandler(slave));
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
