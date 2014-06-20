@@ -29,7 +29,7 @@ public class KVCache implements KeyValueInterface {
 	private int maxElemsPerSet = 10;
 	private Entry[][] cache;
 	private LinkedList<Entry>[] entryQueue;
-	private ReentrantReadWriteLock[] cacheLock;
+	private ReentrantLock[] cacheLock;
 	
     /**
      * Constructs a second-chance-replacement cache.
@@ -44,11 +44,11 @@ public class KVCache implements KeyValueInterface {
     	this.maxElemsPerSet = maxElemsPerSet;
     	cache = new Entry[numSets][];
     	entryQueue =(LinkedList<Entry>[]) new LinkedList<?>[numSets];
-    	cacheLock = new ReentrantReadWriteLock[numSets];
+    	cacheLock = new ReentrantLock[numSets];
     	for(int i = 0; i < numSets; i++){
     		cache[i] = new Entry[maxElemsPerSet];
     		entryQueue[i] = new LinkedList<Entry>();
-    		cacheLock[i] = new ReentrantReadWriteLock();
+    		cacheLock[i] = new ReentrantLock();
     		for(int j = 0; j < maxElemsPerSet; j++){
     			cache[i][j] = new Entry();
     		}
@@ -161,7 +161,7 @@ public class KVCache implements KeyValueInterface {
      * @param  key key to determine the lock to return
      * @return lock for the set that contains the key
      */
-    public ReentrantReadWriteLock getLock(String key) {
+    public ReentrantLock getLock(String key) {
         // implement me
         return cacheLock[this.getSetId(key)];
     }
