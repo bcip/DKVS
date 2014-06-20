@@ -150,6 +150,13 @@ public class TPCMasterHandler implements NetworkHandler {
         		response = e.getKVMessage();
         	}
         	
+        	try {
+				master.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        	
         	try{
         		response.sendMessage(master);
         	}
