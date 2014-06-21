@@ -168,9 +168,7 @@ public class TPCMaster {
     		else{
     			decision = new KVMessage(ABORT);
     		}
-    		
     		announceDecision(slaves, decision);
-    		
     		if(decision.getMsgType().equals(ABORT))
     			//TODO which error to throw?
     			throw new KVException(ERROR_COULD_NOT_RECEIVE_DATA);
@@ -243,6 +241,7 @@ public class TPCMaster {
 		try{
 			for(int i = 0; i < slaves.length; i++){
 				slaveSockets[i] = slaves[i].connectHost(TIMEOUT);
+				request.sendMessage(slaveSockets[i]);
 			}
 			
 			for(int i = 0; i < slaves.length; i++){
@@ -301,9 +300,10 @@ public class TPCMaster {
 			for(i = 0; i < slaves.length; i++){
 				if(slaveSockets[i] != null){
 					try {
-						KVMessage responese = new KVMessage(slaveSockets[i], TIMEOUT);
+						KVMessage response = new KVMessage(slaveSockets[i], TIMEOUT);
 						hasAck[i] = true;
-					} catch (KVException e) {
+					}
+					catch (KVException e) {
 						//ignore
 					}
 					finally{
