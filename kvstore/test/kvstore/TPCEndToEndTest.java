@@ -21,7 +21,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			for(Integer i = 0; i < size; i++)
 				client.put(keys[i], vals[i]);
 			for(Integer i = 0; i < size; i++)
-				assertEquals("get fails", client.get(keys[i]), vals[i]);
+				assertEquals("error", client.get(keys[i]), vals[i]);
 			System.out.println();
 		}
 /*
