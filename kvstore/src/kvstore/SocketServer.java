@@ -38,6 +38,7 @@ public class SocketServer {
     public SocketServer(String hostname, int port) {
         this.hostname = hostname;
         this.port = port;
+        this.stopped = false;
     }
 
     public String getHostname() {
@@ -69,11 +70,10 @@ public class SocketServer {
 			if (port <= 0) {
 				server = new ServerSocket(0);
 				port = server.getLocalPort();
-				server.setSoTimeout(TIMEOUT);
 			} else {
 				server = new ServerSocket(port);
-				server.setSoTimeout(TIMEOUT);
 			}
+			//server.setSoTimeout(TIMEOUT);
 		} catch (IOException e) {
 			throw e;
 		}
