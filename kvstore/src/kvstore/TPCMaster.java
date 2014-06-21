@@ -177,7 +177,7 @@ public class TPCMaster {
     			masterCache.put(key, value);
     		}
     		else{
-    			masterCache.del(value);
+    			masterCache.del(key);
     		}
     	}
     	finally{
@@ -203,13 +203,13 @@ public class TPCMaster {
 	    // implement me
 		String key = msg.getKey();
 		String value = null;
-		
 		masterCache.getLock(key).lock();
 		try{
 	    	value = masterCache.get(key);
-	    	if(value != null)
-	    		return value;
 	    	
+	    	if(value != null){
+	    		return value;
+	    	}
 	    	TPCSlaveInfo[] slaves = findCorrespondingSlaves(key);
 	    	
 	    	for(TPCSlaveInfo slave : slaves){
@@ -217,7 +217,6 @@ public class TPCMaster {
 	    		if(value != null)
 	    			break;
 	    	}
-	    	
 	    	if(value == null)
 	    		throw new KVException(ERROR_NO_SUCH_KEY);
 	    	
@@ -242,14 +241,18 @@ public class TPCMaster {
 			for(int i = 0; i < slaves.length; i++){
 				slaveSockets[i] = slaves[i].connectHost(TIMEOUT);
 				request.sendMessage(slaveSockets[i]);
+				KVMessage vote = new KVMessage(slaveSockets[i]);
+				if(!vote.getMsgType().equals(READY)){
+					return false;
+				}
 			}
-			
+			/*
 			for(int i = 0; i < slaves.length; i++){
+				System.out.println(i + ": enter here");
 				KVMessage vote = new KVMessage(slaveSockets[i], TIMEOUT);
 				if(!vote.getMsgType().equals(READY))
 					return false;
-			}
-			
+			}*/
 			return true;
 		}
 		catch (KVException e){
@@ -279,7 +282,6 @@ public class TPCMaster {
 		boolean[] hasAck = new boolean[slaves.length];
 		while(true){
 			int i;
-			
 			for(i = 0; i < slaves.length; i++){
 				if(!hasAck[i])
 					break;
@@ -291,6 +293,7 @@ public class TPCMaster {
 				if(!hasAck[i]){
 					try {
 						slaveSockets[i] = slaves[i].connectHost(TIMEOUT);
+						decision.sendMessage(slaveSockets[i]);
 					} catch (KVException e) {
 						//ignore
 					}

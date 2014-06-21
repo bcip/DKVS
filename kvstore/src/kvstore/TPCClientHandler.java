@@ -91,7 +91,6 @@ public class TPCClientHandler implements NetworkHandler {
         		}
         		else if(request.getMsgType().equals(DEL_REQ)){
         			tpcMaster.handleTPCRequest(request, false);
-        			
         			response = new KVMessage(RESP, SUCCESS);
         		}
         		else{

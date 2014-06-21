@@ -149,6 +149,7 @@ public class KVCache implements KeyValueInterface {
     		if(entry.valid && entry.key.equals(key)){
     			entry.valid = false;
     			entryQueue[setId].remove(entry);
+    			return;
     		}
     	}
     }

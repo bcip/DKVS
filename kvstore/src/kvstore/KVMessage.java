@@ -100,7 +100,6 @@ public class KVMessage implements Serializable {
 			Node Key = KVElement.getElementsByTagName("Key").item(0);
 			Node Value = KVElement.getElementsByTagName("Value").item(0);
 			Node Message = KVElement.getElementsByTagName("Message").item(0);
-
 			if (Key != null) {
 				this.key = Key.getTextContent();
 			}
@@ -110,7 +109,7 @@ public class KVMessage implements Serializable {
 			if (Message != null) {
 				this.message = Message.getTextContent();
 			}
-
+			 
 			if (this.msgType.equals(KVConstants.PUT_REQ)) {
 				if (Key == null || Value == null || Message != null) {
 					throw new KVException(new KVMessage(KVConstants.RESP,
@@ -257,7 +256,7 @@ public class KVMessage implements Serializable {
 							KVConstants.ERROR_INVALID_FORMAT));
 				}
 			}
-
+			
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance()
 					.newDocumentBuilder();
 			Document doc = builder.newDocument();
@@ -281,7 +280,7 @@ public class KVMessage implements Serializable {
 				KVMessage.appendChild(Message);
 				Message.appendChild(doc.createTextNode(this.message));
 			}
-
+			
 			return printDoc(doc);
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
@@ -307,14 +306,12 @@ public class KVMessage implements Serializable {
 	public void sendMessage(Socket sock) throws KVException {
 		// implement me
 		try {
-
 			String outputMessage = this.toXML();
 			OutputStream outstream = sock.getOutputStream();
 			byte[] sendData = outputMessage.getBytes("UTF-8");
 			outstream.write(sendData);
 			outstream.flush();
 			sock.shutdownOutput();
-
 			System.out.println(outputMessage);
 
 		} catch (IOException e) {

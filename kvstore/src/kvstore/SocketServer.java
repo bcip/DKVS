@@ -64,8 +64,16 @@ public class SocketServer {
      * @throws IOException if unable create and bind a ServerSocket
      */
     public void connect() throws IOException {
-        this.server = new ServerSocket(port);
-        this.server.setSoTimeout(TIMEOUT);
+    	try {    
+			if (port <= 0) {
+				server = new ServerSocket(0);
+				port = server.getLocalPort();
+			} else {
+				server = new ServerSocket(port);
+			}
+		} catch (IOException e) {
+			throw e;
+		}
     }
 
     /**

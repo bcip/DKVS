@@ -143,12 +143,19 @@ public class TPCMasterHandler implements NetworkHandler {
         			}
     				response = new KVMessage(ACK);
         		}
-        		else{
+        		if(response == null){
         			throw new KVException(ERROR_INVALID_FORMAT);
         		}
         	}
         	catch (KVException e){
         		response = e.getKVMessage();
+        	}
+        	
+        	try{
+        		response.sendMessage(master);
+        	}
+        	catch (KVException e){
+        		//ignore
         	}
         	
         	try {
@@ -157,13 +164,6 @@ public class TPCMasterHandler implements NetworkHandler {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-        	
-        	try{
-        		response.sendMessage(master);
-        	}
-        	catch (KVException e){
-        		//ignore
-        	}
         }
     }
 }

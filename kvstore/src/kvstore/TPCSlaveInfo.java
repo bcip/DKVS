@@ -73,9 +73,11 @@ public class TPCSlaveInfo {
             sock.connect(new InetSocketAddress(hostname, port), TIMEOUT_MILLISECONDS);
             return sock;
         } catch (UnknownHostException ex) {
+        	System.out.println("Connect Host Error 1");
             throw new KVException(new KVMessage(
                 RESP, ERROR_COULD_NOT_CONNECT));
         } catch (IOException ex) {
+        	System.out.println("Connect Host Error 2");
             throw new KVException(new KVMessage(
                 RESP, ERROR_COULD_NOT_CREATE_SOCKET));
         }
