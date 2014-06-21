@@ -1,0 +1,375 @@
+fileDir
+/home/aa/webProject/onlineJudge/submitFile/group3/1403333539_kvstore.tar.gz
+Testing
+Buildfile: /home/aa/webProject/onlineJudge/submitFile/temp/build.xml
+clean:
+compile:
+[mkdir] Created dir: /home/aa/webProject/onlineJudge/submitFile/temp/bin
+[javac] Compiling 22 source files to /home/aa/webProject/onlineJudge/submitFile/temp/bin
+compile-tests:
+[javac] Compiling 27 source files to /home/aa/webProject/onlineJudge/submitFile/temp/bin
+[javac] Compiling 2 source files to /home/aa/webProject/onlineJudge/submitFile/temp/bin
+cleancompile:
+runag:
+[java] AutoGrader Run: Sat Jun 21 06:52:21 UTC 2014
+[java]
+[java] ========================== DISPLAYING FAILED TESTS ==========================
+[java] Running test testEndToEnd(kvstore.TPCEndToEndTest)
+[java] 
+[java] 
+[java] 4611686018427387903@127.0.0.1:50909
+[java] 
+[java]
+[java] 
+[java] 
+[java] Successfully registered 4611686018427387903@127.0.0.1:50909
+[java] 
+[java]
+[java] 
+[java] 
+[java] 9223372036854775807@127.0.0.1:38839
+[java] 
+[java]
+[java] 
+[java] 
+[java] Successfully registered 9223372036854775807@127.0.0.1:38839
+[java] 
+[java]
+[java] 
+[java] 
+[java] -4611686018427387903@127.0.0.1:60462
+[java] 
+[java]
+[java] 
+[java] 
+[java] Successfully registered -4611686018427387903@127.0.0.1:60462
+[java] 
+[java]
+[java] 
+[java] 
+[java] -1@127.0.0.1:38688
+[java] 
+[java]
+[java] 
+[java] 
+[java] Successfully registered -1@127.0.0.1:38688
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] hate
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] hate
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] hate
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] Success
+[java] 
+[java]
+[java] 
+[java] 
+[java] hard work
+[java] success
+[java] 
+[java]
+[java] 
+[java] 
+[java] hard work
+[java] success
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] hard work
+[java] success
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] Success
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] more love
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] more love
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] more love
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] Success
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] shocking success
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] shocking success
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] shocking success
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] Success
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] Success
+[java] 
+[java]
+[java] 
+[java] 
+[java] hard work
+[java] 
+[java]
+[java] 
+[java] 
+[java] hard work
+[java] success
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] 
+[java]
+[java] 
+[java] 
+[java] love
+[java] more love
+[java] 
+[java]
+[java] 
+[java] 
+[java] hard work
+[java] 
+[java]
+[java] 
+[java] 
+[java] hard work
+[java] success
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java] Data Error: Key does not exist
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java] Data Error: Key does not exist
+[java] 
+[java]
+[java] 
+[java] 
+[java] Data Error: Key does not exist
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] a little luck
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java]
+[java] 
+[java] 
+[java] Success
+[java] 
+[java]
+[java] Running test testPutGetDelGet(kvstore.TPCEndToEndTest)
+[java] SERVER-SIDE: Error from masterClient
+[java] java.net.BindException: Address already in use
+[java] at java.net.PlainSocketImpl.socketBind(Native Method)
+[java] at java.net.AbstractPlainSocketImpl.bind(AbstractPlainSocketImpl.java:376)
+[java] at java.net.ServerSocket.bind(ServerSocket.java:376)
+[java] at java.net.ServerSocket.(ServerSocket.java:237)
+[java] at java.net.ServerSocket.(ServerSocket.java:128)
+[java] at kvstore.SocketServer.connect(SocketServer.java:72)
+[java] at kvstore.ServerRunner.run(ServerRunner.java:21)
+[java] at java.lang.Thread.run(Thread.java:744)
+[java] Encountered fatal error during autograder run.
+BUILD FAILED
+/home/aa/webProject/onlineJudge/submitFile/temp/build.xml:154: Java returned: 255
+Total time: 1 minute 4 seconds
