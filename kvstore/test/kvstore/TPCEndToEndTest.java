@@ -7,12 +7,15 @@ import org.junit.Test;
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
 	
     @Test(timeout = 15000)
-    public void testPutGetDel() throws KVException {
+    public void testPutGet() throws KVException {
 			System.out.println("Test Put and Get");
 			client.put("key", "value");
 			assertEquals("get failed", client.get("key"), "value");
 			System.out.println();
-			
+		}
+
+    @Test(timeout = 15000)
+    public void testDelGet() throws KVException {
 			System.out.println("Test Del");
 			client.put("key", "value");
 			client.del("key");

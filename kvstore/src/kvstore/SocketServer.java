@@ -3,6 +3,7 @@ package kvstore;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 /**
@@ -68,8 +69,10 @@ public class SocketServer {
 			if (port <= 0) {
 				server = new ServerSocket(0);
 				port = server.getLocalPort();
+				server.setSoTimeout(TIMEOUT);
 			} else {
 				server = new ServerSocket(port);
+				server.setSoTimeout(TIMEOUT);
 			}
 		} catch (IOException e) {
 			throw e;

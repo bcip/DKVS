@@ -103,11 +103,14 @@ public class TPCClientHandler implements NetworkHandler {
         	finally{
         		try{
         			response.sendMessage(client);
-        			client.close();
         		}
         		catch(KVException e){
         			//ignore
-        		} catch (IOException e) {
+        		}
+        		
+        		try{
+        			client.close();
+        		}catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
