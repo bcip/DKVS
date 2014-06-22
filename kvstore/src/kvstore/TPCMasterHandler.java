@@ -128,7 +128,13 @@ public class TPCMasterHandler implements NetworkHandler {
 				KVMessage log = tpcLog.getOperation();
 				if(log != null)
 				{
-					response = log;
+					if(log.getMsgType().equals(DEL_REQ) ||
+							log.getMsgType().equals(PUT_REQ))
+						response = new KVMessage(ABORT);
+					else if(log.getMsgType().equals(ACK)){
+						response = new KVMessage(ACK);
+					}
+						
 				} else {
 
 					KVMessage request = new KVMessage(master);
