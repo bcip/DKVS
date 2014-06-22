@@ -164,9 +164,10 @@ public class TPCMasterHandler implements NetworkHandler {
 						response.setValue(value);
 					} else if (request.getMsgType().equals(DEL_REQ)
 							|| request.getMsgType().equals(PUT_REQ)) {
-						checkKey(request.getKey());
 						if(request.getMsgType().equals(PUT_REQ))
 							checkValue(request.getValue());
+						else
+							kvServer.get(request.getKey());
 						tpcLog.appendAndFlush(request);
 						response = new KVMessage(READY);
 					}

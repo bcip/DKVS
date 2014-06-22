@@ -115,22 +115,28 @@ public class TPCLog {
     		if (entry.getMsgType().equals(PUT_REQ)
     				|| entry.getMsgType().equals(DEL_REQ)){
     			operation = entry;
+    			System.out.println("set operation: " + operation.getMsgType());
     		} else if (entry.getMsgType().equals(COMMIT)){
     			if(operation != null){
 	    			if(operation.getMsgType().equals(PUT_REQ)){
 	    				kvServer.put(operation.getKey(), operation.getValue());
+	    				System.out.println("kvserver does operation: " + operation.getMsgType());
 	    			} else if(operation.getMsgType().equals(DEL_REQ)) {
 	    				kvServer.del(operation.getKey());
+	    				System.out.println("kvserver does operation: " + operation.getMsgType());
 	    			} else {
 	    				assert(false);
 	    			}
     			}
     			operation = new KVMessage(KVConstants.ACK);
+    			System.out.println("set operation: " + operation.getMsgType());
     		} else if (entry.getMsgType().equals(KVConstants.ABORT)){
     			operation = new KVMessage(KVConstants.ACK);
+    			System.out.println("set operation: " + operation.getMsgType());
     		} else if (entry.getMsgType().equals(KVConstants.ACK)
     					&& operation.getMsgType().equals(KVConstants.ACK)) {
     			operation = null;
+    			System.out.println("operation acked.");
     		} else {
     			assert(false);
     		}

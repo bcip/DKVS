@@ -7,11 +7,39 @@ import java.util.Random;
 import org.junit.Test;
 
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
-	
+	/*
+	@Test(timeout = 15000)
+    public void testPutGet2() throws KVException {
+
+		
+		System.out.println("Test Put and Get 2");
+			int size = 1;
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+
+			
+
+			for(Integer i = 0; i < size; i++){
+				assertEquals(client.get(keys[i]), vals[i]);
+				System.out.println("Success");
+			}
+			System.out.println();
+			
+			try{
+				client.get("key1");
+			}catch(KVException e){
+				System.out.println(e.getKVMessage().getMessage());
+			}
+	}
+	*/
 	@Test(timeout = 15000)
 	public void testPutGet() throws KVException {
 
-		int size = 10;
+		int size = 2;
 		String[] keys = new String[size];
 		String[] vals = new String[size];
 		for (Integer i = 0; i < size; i++) {
@@ -19,11 +47,15 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			vals[i] = "pval" + i.toString();
 		}
 
-		System.out.println("Test Put and Get");
+		System.out.println("Test Put and Get 1");
 		for (Integer i = 0; i < size; i++) {
 			System.out.println("Client put key=" + keys[i] + "  value="
 					+ vals[i]);
-			client.put(keys[i], vals[i]);
+			try{
+				client.put(keys[i], vals[i]);
+			}catch(KVException e){
+				System.out.println(e.getKVMessage().getMessage());
+			}
 			System.out.println();
 		}
 
@@ -34,29 +66,16 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			System.out.println("Success");
 			System.out.println();
 		}
+		client.del(keys[1]);
+		try{
+			client.del(keys[1]);
+		}catch(KVException e){
+			System.out.println(e.getKVMessage().getMessage());
+		}
 		System.out.println();
 	}
-
 	
-	@Test(timeout = 15000)
-    public void testPutGet2() throws KVException {
-
-			int size = (int)(100 * (new Random().nextDouble()));
-			String[] keys = new String[size];
-			String[] vals = new String[size];
-			for(Integer i = 0; i < size; i++){
-				keys[i] = "pkey" + i.toString();
-				vals[i] = "pval" + i.toString();
-			}
-
-			System.out.println("Test Put and Get");
-			for(Integer i = 0; i < size; i++)
-				client.put(keys[i], vals[i]);
-
-			for(Integer i = 0; i < size; i++)
-				assertEquals(client.get(keys[i]), vals[i]);
-			System.out.println();
-	}
+	/*
 	@Test(timeout = 15000)
     public void testPutGet3() throws KVException {
 
@@ -222,5 +241,5 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
-	//*/
+	*/
 }
