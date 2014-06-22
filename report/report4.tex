@@ -84,12 +84,6 @@ In \texttt{KVMessage}, we only add support for new message types.
 	\end{algorithmic}
 \end{bframe}
 
-\subsection{Test}
-\begin{compactitem}
-	\item Test new format of xml messages
-	\item Test whether recover from logs correctly.
-\end{compactitem}
-
 \section{Task 2}
 \subsection{Overview}
 Implement registration logic in \texttt{TPCRegistrationHandler}, \texttt{TPCSlaveInfo}, and 
@@ -160,12 +154,6 @@ we define a regex expression in \texttt{TPCSlaveInfo} that  \\
 		\EndProcedure
 	\end{algorithmic}
 \end{bframe}
-\subsection{Test}
-\begin{compactitem}
-	\item Test whether slave server can register successfully;
-	\item Test whether slave infomation are recorded correctly;
-	\item Test whether master can register slave successfully in \texttt{TPCMasterHandler}.
-\end{compactitem}
 
 \section{Task 3}
 \subsection{Overview}
@@ -231,11 +219,7 @@ Implement consistent hashing in \texttt{TPCMaster} to find the slaves involved i
 		\EndProcedure
 	\end{algorithmic}
 \end{bframe}
-\subsection{Test}
-\begin{compactitem}
-	\item Test whether the correctness location of consistent hashing: \texttt{findFirstReplica} and \texttt{findSuccessor};
-	\item Test whether the client handler calls the correct methods of \texttt{tpcmaster}
-\end{compactitem}
+
 \section{Task 4}
 \subsection{Overview}
 Implement the rest of \texttt{TPCMaster} for two-phase commit logic on the master node.
@@ -328,11 +312,6 @@ Implement the rest of \texttt{TPCMaster} for two-phase commit logic on the maste
 		\EndProcedure
 	\end{algorithmic}
 \end{bframe}
-\subsection{Test}
-\begin{compactitem}
-	\item Test \texttt{GET} requests;
-	\item Test \texttt{PUT} and \texttt{DELETE} requests.
-\end{compactitem}
 
 \section{Task 5}
 \subsection{Overview}
@@ -383,9 +362,361 @@ Implement \texttt{TPCMasterHandler} that handles TPC logic on the slave servers.
 		\EndProcedure
 	\end{algorithmic}
 \end{bframe}
-\subsection{Test}
+
+\section{TPCEndToEndTest}
+The test code is as follows:
+\begin{lstlisting}[language=java]
+public class TPCEndToEndTest extends TPCEndToEndTemplate {
+	@Test(timeout = 15000)
+	public void testPutGet() throws KVException {
+
+		int size = 10;
+		String[] keys = new String[size];
+		String[] vals = new String[size];
+		for (Integer i = 0; i < size; i++) {
+			keys[i] = "pkey" + i.toString();
+			vals[i] = "pval" + i.toString();
+		}
+
+		System.out.println("Test Put and Get");
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Client put key=" + keys[i] + "  value="
+					+ vals[i]);
+			client.put(keys[i], vals[i]);
+			System.out.println();
+		}
+
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Test of get key=" + keys[i]);
+			System.out.println("Expected to get value=" + vals[i]);
+			assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println("Success");
+			System.out.println();
+		}
+		System.out.println();
+	}
+
+	@Test(timeout = 15000)
+    public void testPutGet2() throws KVException {
+
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+
+	@Test(timeout = 15000)
+    public void testPutGet3() throws KVException {
+
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+
+	@Test(timeout = 15000)
+    public void testPutGet4() throws KVException {
+
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+
+	@Test(timeout = 15000)
+	public void testDel() throws KVException {
+
+		int size = 10;
+		String[] keys = new String[size];
+		String[] vals = new String[size];
+		for (Integer i = 0; i < size; i++) {
+			keys[i] = "dkey" + i.toString();
+			vals[i] = "dval" + i.toString();
+		}
+
+		System.out.println("Test Del");
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Client put key=" + keys[i] + "  value="
+					+ vals[i]);
+			client.put(keys[i], vals[i]);
+			System.out.println();
+		}
+
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Del key=" + keys[i]);
+			client.del(keys[i]);
+			System.out.println();
+		}
+		for (Integer i = 0; i < size; i++) {
+			try {
+				client.get(keys[i]);
+				fail();
+			} catch (KVException e) {
+				assertEquals("del failed", e.getKVMessage().getMessage(),
+						"Data Error: Key does not exist");
+				System.out.println("Success at del key=" + keys[i]);
+				System.out.println();
+			}
+		}
+		System.out.println();
+	}
+
+	@Test(timeout = 15000)
+	public void testInvalidKeyAndInvalidValue() {
+		System.out.println("Test put with null key");
+		try {
+			client.put(null, "test");
+			fail();
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
+			System.out.println("Success in null key");
+		}
+		System.out.println();
+
+		System.out.println("Test put with empty key");
+		try {
+			client.put("", "test");
+			fail();
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
+			System.out.println("Success in empty key");
+		}
+		System.out.println();
+
+		System.out.println("Test put with null value");
+		try {
+			client.put("test", null);
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_VALUE);
+			System.out.println("Success in null value");
+		}
+		System.out.println();
+
+		System.out.println("Test put with empty value");
+		try {
+			client.put("test", "");
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_VALUE);
+			System.out.println("Success in empty value");
+		}
+		System.out.println();
+	}
+}
+\end{lstlisting}
+
 \begin{compactitem}
-	\item Overall test using \texttt{TPCEndToEndTest}
-	\item Test \texttt{Get, Put, Del} cases and cases with exceptions such as invalid keys and values.
+\item \texttt{testPutGet}: We test put of 10 key-value pairs. Then get them to see whether get the right value.
+\item \texttt{testPutGet2} \& \texttt{testPutGet3-4}: We test put of random number of key-value pairs. Then get them to see whether get the right value.
+\item \texttt{testDel}: We put 10 pairs. Then delete them then see whether get error.
+\item \texttt{testInvalidKeyAndInvalidValue}: Test of null key and value, empty key and value.
 \end{compactitem}
+
+The result is:
+\begin{lstlisting}
+
+\end{lstlisting}
+
 \end{document}
+public class TPCEndToEndTest extends TPCEndToEndTemplate {
+	@Test(timeout = 15000)
+	public void testPutGet() throws KVException {
+
+		int size = 10;
+		String[] keys = new String[size];
+		String[] vals = new String[size];
+		for (Integer i = 0; i < size; i++) {
+			keys[i] = "pkey" + i.toString();
+			vals[i] = "pval" + i.toString();
+		}
+
+		System.out.println("Test Put and Get");
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Client put key=" + keys[i] + "  value="
+					+ vals[i]);
+			client.put(keys[i], vals[i]);
+			System.out.println();
+		}
+
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Test of get key=" + keys[i]);
+			System.out.println("Expected to get value=" + vals[i]);
+			assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println("Success");
+			System.out.println();
+		}
+		System.out.println();
+	}
+
+	@Test(timeout = 15000)
+    public void testPutGet2() throws KVException {
+
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+
+	@Test(timeout = 15000)
+    public void testPutGet3() throws KVException {
+
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+
+	@Test(timeout = 15000)
+    public void testPutGet4() throws KVException {
+
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+
+	@Test(timeout = 15000)
+	public void testDel() throws KVException {
+
+		int size = 10;
+		String[] keys = new String[size];
+		String[] vals = new String[size];
+		for (Integer i = 0; i < size; i++) {
+			keys[i] = "dkey" + i.toString();
+			vals[i] = "dval" + i.toString();
+		}
+
+		System.out.println("Test Del");
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Client put key=" + keys[i] + "  value="
+					+ vals[i]);
+			client.put(keys[i], vals[i]);
+			System.out.println();
+		}
+
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Del key=" + keys[i]);
+			client.del(keys[i]);
+			System.out.println();
+		}
+		for (Integer i = 0; i < size; i++) {
+			try {
+				client.get(keys[i]);
+				fail();
+			} catch (KVException e) {
+				assertEquals("del failed", e.getKVMessage().getMessage(),
+						"Data Error: Key does not exist");
+				System.out.println("Success at del key=" + keys[i]);
+				System.out.println();
+			}
+		}
+		System.out.println();
+	}
+
+	@Test(timeout = 15000)
+	public void testInvalidKeyAndInvalidValue() {
+		System.out.println("Test put with null key");
+		try {
+			client.put(null, "test");
+			fail();
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
+			System.out.println("Success in null key");
+		}
+		System.out.println();
+
+		System.out.println("Test put with empty key");
+		try {
+			client.put("", "test");
+			fail();
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
+			System.out.println("Success in empty key");
+		}
+		System.out.println();
+
+		System.out.println("Test put with null value");
+		try {
+			client.put("test", null);
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_VALUE);
+			System.out.println("Success in null value");
+		}
+		System.out.println();
+
+		System.out.println("Test put with empty value");
+		try {
+			client.put("test", "");
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_VALUE);
+			System.out.println("Success in empty value");
+		}
+		System.out.println();
+	}
+}
+\end{lstlisting}
