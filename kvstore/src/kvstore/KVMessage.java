@@ -312,7 +312,7 @@ public class KVMessage implements Serializable {
 			outstream.write(sendData);
 			outstream.flush();
 			sock.shutdownOutput();
-			System.out.println(outputMessage);
+			//System.out.println(outputMessage);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
