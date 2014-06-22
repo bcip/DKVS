@@ -546,177 +546,158 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 
 The result is:
 \begin{lstlisting}
-
+runtest:
+    [junit] Testsuite: kvstore.TPCEndToEndTest
+    [junit] Test Put and Get
+    [junit] Client put key=pkey0  value=pval0
+    [junit] 
+    [junit] Client put key=pkey1  value=pval1
+    [junit] 
+    [junit] Client put key=pkey2  value=pval2
+    [junit] 
+    [junit] Client put key=pkey3  value=pval3
+    [junit] 
+    [junit] Client put key=pkey4  value=pval4
+    [junit] 
+    [junit] Client put key=pkey5  value=pval5
+    [junit] 
+    [junit] Client put key=pkey6  value=pval6
+    [junit] 
+    [junit] Client put key=pkey7  value=pval7
+    [junit] 
+    [junit] Client put key=pkey8  value=pval8
+    [junit] 
+    [junit] Client put key=pkey9  value=pval9
+    [junit] 
+    [junit] Test of get key=pkey0
+    [junit] Expected to get value=pval0
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey1
+    [junit] Expected to get value=pval1
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey2
+    [junit] Expected to get value=pval2
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey3
+    [junit] Expected to get value=pval3
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey4
+    [junit] Expected to get value=pval4
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey5
+    [junit] Expected to get value=pval5
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey6
+    [junit] Expected to get value=pval6
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey7
+    [junit] Expected to get value=pval7
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey8
+    [junit] Expected to get value=pval8
+    [junit] Success
+    [junit] 
+    [junit] Test of get key=pkey9
+    [junit] Expected to get value=pval9
+    [junit] Success
+    [junit] 
+    [junit] 
+    [junit] Test Put and Get
+    [junit] 
+    [junit] Test Put and Get
+    [junit] 
+    [junit] Test Put and Get
+    [junit] 
+    [junit] Test Del
+    [junit] Client put key=dkey0  value=dval0
+    [junit] 
+    [junit] Client put key=dkey1  value=dval1
+    [junit] 
+    [junit] Client put key=dkey2  value=dval2
+    [junit] 
+    [junit] Client put key=dkey3  value=dval3
+    [junit] 
+    [junit] Client put key=dkey4  value=dval4
+    [junit] 
+    [junit] Client put key=dkey5  value=dval5
+    [junit] 
+    [junit] Client put key=dkey6  value=dval6
+    [junit] 
+    [junit] Client put key=dkey7  value=dval7
+    [junit] 
+    [junit] Client put key=dkey8  value=dval8
+    [junit] 
+    [junit] Client put key=dkey9  value=dval9
+    [junit] 
+    [junit] Del key=dkey0
+    [junit] 
+    [junit] Del key=dkey1
+    [junit] 
+    [junit] Del key=dkey2
+    [junit] 
+    [junit] Del key=dkey3
+    [junit] 
+    [junit] Del key=dkey4
+    [junit] 
+    [junit] Del key=dkey5
+    [junit] 
+    [junit] Del key=dkey6
+    [junit] 
+    [junit] Del key=dkey7
+    [junit] 
+    [junit] Del key=dkey8
+    [junit] 
+    [junit] Del key=dkey9
+    [junit] 
+    [junit] Success at del key=dkey0
+    [junit] 
+    [junit] Success at del key=dkey1
+    [junit] 
+    [junit] Success at del key=dkey2
+    [junit] 
+    [junit] Success at del key=dkey3
+    [junit] 
+    [junit] Success at del key=dkey4
+    [junit] 
+    [junit] Success at del key=dkey5
+    [junit] 
+    [junit] Success at del key=dkey6
+    [junit] 
+    [junit] Success at del key=dkey7
+    [junit] 
+    [junit] Success at del key=dkey8
+    [junit] 
+    [junit] Success at del key=dkey9
+    [junit] 
+    [junit] 
+    [junit] Test put with null key
+    [junit] Success in null key
+    [junit] 
+    [junit] Test put with empty key
+    [junit] Success in empty key
+    [junit] 
+    [junit] Test put with null value
+    [junit] Success in null value
+    [junit] 
+    [junit] Test put with empty value
+    [junit] Success in empty value
+    [junit] 
+    [junit] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 17.757 sec
+    [junit] 
+    [junit] Testcase: testPutGet took 2.34 sec
+    [junit] Testcase: testPutGet2 took 4.12 sec
+    [junit] Testcase: testPutGet3 took 3.209 sec
+    [junit] Testcase: testPutGet4 took 4.303 sec
+    [junit] Testcase: testDel took 2.034 sec
+    [junit] Testcase: testInvalidKeyAndInvalidValue took 1.728 sec
 \end{lstlisting}
 
 \end{document}
-public class TPCEndToEndTest extends TPCEndToEndTemplate {
-	@Test(timeout = 15000)
-	public void testPutGet() throws KVException {
-
-		int size = 10;
-		String[] keys = new String[size];
-		String[] vals = new String[size];
-		for (Integer i = 0; i < size; i++) {
-			keys[i] = "pkey" + i.toString();
-			vals[i] = "pval" + i.toString();
-		}
-
-		System.out.println("Test Put and Get");
-		for (Integer i = 0; i < size; i++) {
-			System.out.println("Client put key=" + keys[i] + "  value="
-					+ vals[i]);
-			client.put(keys[i], vals[i]);
-			System.out.println();
-		}
-
-		for (Integer i = 0; i < size; i++) {
-			System.out.println("Test of get key=" + keys[i]);
-			System.out.println("Expected to get value=" + vals[i]);
-			assertEquals(client.get(keys[i]), vals[i]);
-			System.out.println("Success");
-			System.out.println();
-		}
-		System.out.println();
-	}
-
-	@Test(timeout = 15000)
-    public void testPutGet2() throws KVException {
-
-			int size = (int)(100 * (new Random().nextDouble()));
-			String[] keys = new String[size];
-			String[] vals = new String[size];
-			for(Integer i = 0; i < size; i++){
-				keys[i] = "pkey" + i.toString();
-				vals[i] = "pval" + i.toString();
-			}
-
-			System.out.println("Test Put and Get");
-			for(Integer i = 0; i < size; i++)
-				client.put(keys[i], vals[i]);
-
-			for(Integer i = 0; i < size; i++)
-				assertEquals(client.get(keys[i]), vals[i]);
-			System.out.println();
-	}
-
-	@Test(timeout = 15000)
-    public void testPutGet3() throws KVException {
-
-			int size = (int)(100 * (new Random().nextDouble()));
-			String[] keys = new String[size];
-			String[] vals = new String[size];
-			for(Integer i = 0; i < size; i++){
-				keys[i] = "pkey" + i.toString();
-				vals[i] = "pval" + i.toString();
-			}
-
-			System.out.println("Test Put and Get");
-			for(Integer i = 0; i < size; i++)
-				client.put(keys[i], vals[i]);
-
-			for(Integer i = 0; i < size; i++)
-				assertEquals(client.get(keys[i]), vals[i]);
-			System.out.println();
-	}
-
-	@Test(timeout = 15000)
-    public void testPutGet4() throws KVException {
-
-			int size = (int)(100 * (new Random().nextDouble()));
-			String[] keys = new String[size];
-			String[] vals = new String[size];
-			for(Integer i = 0; i < size; i++){
-				keys[i] = "pkey" + i.toString();
-				vals[i] = "pval" + i.toString();
-			}
-
-			System.out.println("Test Put and Get");
-			for(Integer i = 0; i < size; i++)
-				client.put(keys[i], vals[i]);
-
-			for(Integer i = 0; i < size; i++)
-				assertEquals(client.get(keys[i]), vals[i]);
-			System.out.println();
-	}
-
-	@Test(timeout = 15000)
-	public void testDel() throws KVException {
-
-		int size = 10;
-		String[] keys = new String[size];
-		String[] vals = new String[size];
-		for (Integer i = 0; i < size; i++) {
-			keys[i] = "dkey" + i.toString();
-			vals[i] = "dval" + i.toString();
-		}
-
-		System.out.println("Test Del");
-		for (Integer i = 0; i < size; i++) {
-			System.out.println("Client put key=" + keys[i] + "  value="
-					+ vals[i]);
-			client.put(keys[i], vals[i]);
-			System.out.println();
-		}
-
-		for (Integer i = 0; i < size; i++) {
-			System.out.println("Del key=" + keys[i]);
-			client.del(keys[i]);
-			System.out.println();
-		}
-		for (Integer i = 0; i < size; i++) {
-			try {
-				client.get(keys[i]);
-				fail();
-			} catch (KVException e) {
-				assertEquals("del failed", e.getKVMessage().getMessage(),
-						"Data Error: Key does not exist");
-				System.out.println("Success at del key=" + keys[i]);
-				System.out.println();
-			}
-		}
-		System.out.println();
-	}
-
-	@Test(timeout = 15000)
-	public void testInvalidKeyAndInvalidValue() {
-		System.out.println("Test put with null key");
-		try {
-			client.put(null, "test");
-			fail();
-		} catch (KVException e){
-			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
-			System.out.println("Success in null key");
-		}
-		System.out.println();
-
-		System.out.println("Test put with empty key");
-		try {
-			client.put("", "test");
-			fail();
-		} catch (KVException e){
-			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
-			System.out.println("Success in empty key");
-		}
-		System.out.println();
-
-		System.out.println("Test put with null value");
-		try {
-			client.put("test", null);
-		} catch (KVException e){
-			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_VALUE);
-			System.out.println("Success in null value");
-		}
-		System.out.println();
-
-		System.out.println("Test put with empty value");
-		try {
-			client.put("test", "");
-		} catch (KVException e){
-			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_VALUE);
-			System.out.println("Success in empty value");
-		}
-		System.out.println();
-	}
-}
-\end{lstlisting}
