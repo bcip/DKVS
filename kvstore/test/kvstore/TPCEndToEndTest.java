@@ -10,7 +10,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 	@Test(timeout = 15000)
 	public void testPutGet() throws KVException {
 
-		int size = 1;
+		int size = 10;
 		String[] keys = new String[size];
 		String[] vals = new String[size];
 		for (Integer i = 0; i < size; i++) {
@@ -20,72 +20,80 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 
 		System.out.println("Test Put and Get");
 		for (Integer i = 0; i < size; i++) {
+			System.out.println("Client put key=" + keys[i] + "  value="
+					+ vals[i]);
 			client.put(keys[i], vals[i]);
+			System.out.println();
 		}
-		//assertEquals(client.get(keys[0]), vals[0]);
+
+		for (Integer i = 0; i < size; i++) {
+			System.out.println("Test of get key=" + keys[i]);
+			System.out.println("Expected to get value=" + vals[i]);
+			assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println("Success");
+			System.out.println();
+		}
 		System.out.println();
 	}
-///*
+
 	@Test(timeout = 15000)
     public void testPutGet2() throws KVException {
-			
-			int size = 1;//(new Random().nextDouble()));
+
+			int size = (int)(100 * (new Random().nextDouble()));
 			String[] keys = new String[size];
 			String[] vals = new String[size];
 			for(Integer i = 0; i < size; i++){
 				keys[i] = "pkey" + i.toString();
 				vals[i] = "pval" + i.toString();
 			}
-	
+
 			System.out.println("Test Put and Get");
 			for(Integer i = 0; i < size; i++)
 				client.put(keys[i], vals[i]);
-			
+
 			for(Integer i = 0; i < size; i++)
 				assertEquals(client.get(keys[i]), vals[i]);
 			System.out.println();
 	}
-	//*/
 	@Test(timeout = 15000)
     public void testPutGet3() throws KVException {
-			
-			int size = (int)(100 * 1);//(new Random().nextDouble()));
+
+			int size = (int)(100 * (new Random().nextDouble()));
 			String[] keys = new String[size];
 			String[] vals = new String[size];
 			for(Integer i = 0; i < size; i++){
 				keys[i] = "pkey" + i.toString();
 				vals[i] = "pval" + i.toString();
 			}
-	
+
 			System.out.println("Test Put and Get");
 			for(Integer i = 0; i < size; i++)
 				client.put(keys[i], vals[i]);
-			
+
 			for(Integer i = 0; i < size; i++)
 				assertEquals(client.get(keys[i]), vals[i]);
 			System.out.println();
 	}
-	
+
 	@Test(timeout = 15000)
     public void testPutGet4() throws KVException {
-			
-			int size = (int)(100 * 1);//(new Random().nextDouble()));
+
+			int size = (int)(100 * (new Random().nextDouble()));
 			String[] keys = new String[size];
 			String[] vals = new String[size];
 			for(Integer i = 0; i < size; i++){
 				keys[i] = "pkey" + i.toString();
 				vals[i] = "pval" + i.toString();
 			}
-	
+
 			System.out.println("Test Put and Get");
 			for(Integer i = 0; i < size; i++)
 				client.put(keys[i], vals[i]);
-			
+
 			for(Integer i = 0; i < size; i++)
 				assertEquals(client.get(keys[i]), vals[i]);
 			System.out.println();
 	}
-	
 	@Test(timeout = 15000)
 	public void testDel() throws KVException {
 
@@ -123,7 +131,6 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
-	
 	@Test(timeout = 15000)
 	public void testInvalidKeyAndInvalidValue() {
 		System.out.println("Test put with null key");
@@ -135,7 +142,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			System.out.println("Success in null key");
 		}
 		System.out.println();
-		
+
 		System.out.println("Test put with empty key");
 		try {
 			client.put("", "test");
@@ -145,7 +152,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			System.out.println("Success in empty key");
 		}
 		System.out.println();
-		
+
 		System.out.println("Test put with null value");
 		try {
 			client.put("test", null);
@@ -154,7 +161,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			System.out.println("Success in null value");
 		}
 		System.out.println();
-		
+
 		System.out.println("Test put with empty value");
 		try {
 			client.put("test", "");

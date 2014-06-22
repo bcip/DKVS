@@ -129,8 +129,7 @@ public class TPCLog {
     		} else if (entry.getMsgType().equals(KVConstants.ABORT)){
     			operation = new KVMessage(KVConstants.ACK);
     		} else if (entry.getMsgType().equals(KVConstants.ACK)
-    					&& operation.getMsgType().equals(KVConstants.ACK)) 
-    		{
+    					&& operation.getMsgType().equals(KVConstants.ACK)) {
     			operation = null;
     		} else {
     			assert(false);
