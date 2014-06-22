@@ -1,6 +1,7 @@
 package kvstore;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -65,18 +66,17 @@ public class SocketServer {
      *
      * @throws IOException if unable create and bind a ServerSocket
      */
-    public void connect() throws IOException {
-    	try {    
+    public void connect() {
+    	try{
 			if (port <= 0) {
 				server = new ServerSocket(0);
 				port = server.getLocalPort();
 			} else {
 				server = new ServerSocket(port);
 			}
-			//server.setSoTimeout(TIMEOUT);
-		} catch (IOException e) {
-			throw e;
-		}
+			server.setSoTimeout(TIMEOUT);
+    	}catch(IOException e){
+    	}
     }
 
     /**
@@ -95,12 +95,15 @@ public class SocketServer {
         	}
         	catch (SocketTimeoutException e){
         		//ignore
-        	}
+        	//	System.out.println("server time out");
+        	} catch (IOException e) {
+        	//	System.out.println("server io exception");
+			}
         }
         try {
             server.close();
         } catch (IOException e) {
-            // ignore error
+            throw e;
         }
     }
 
@@ -111,6 +114,11 @@ public class SocketServer {
      */
     public void stop() {
         stopped = true;
+        /*
+        try {
+			server.close();
+		} catch (IOException e) {
+		}*/
     }
 
 }

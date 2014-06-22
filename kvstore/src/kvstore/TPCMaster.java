@@ -103,9 +103,10 @@ public class TPCMaster {
         	}
         }
         try{
-        	if(slaves.ceilingEntry(new Long(hashCode)) != null)
-        		return slaves.ceilingEntry(new Long(hashCode)).getValue();
-        	return slaves.firstEntry().getValue();
+        	if(slaves.ceilingKey(new Long(hashCode)) == null)
+        		return slaves.firstEntry().getValue();
+        	return slaves.ceilingEntry(new Long(hashCode)).getValue();
+        	
         }
         finally{
         	slavesLock.unlock();
@@ -129,7 +130,9 @@ public class TPCMaster {
      * @return SlaveInfo of successor replica
      */
     public TPCSlaveInfo findSuccessor(TPCSlaveInfo firstReplica) {
-        return findFirstReplica(firstReplica.getSlaveID()+1);
+    	if(slaves.higherEntry(firstReplica.getSlaveID()) == null) 
+            return slaves.firstEntry().getValue();
+        return slaves.higherEntry(firstReplica.getSlaveID()).getValue();
     }
     
     public TPCSlaveInfo[] findCorrespondingSlaves(String key){
@@ -212,11 +215,8 @@ public class TPCMaster {
 	    	}
 	    	TPCSlaveInfo[] slaves = findCorrespondingSlaves(key);
 	    	
-	    	for(TPCSlaveInfo slave : slaves){
-	    		value = getFromSlave(slave, msg);
-	    		if(value != null)
-	    			break;
-	    	}
+	    	value = getFromSlaves(slaves, msg);
+	    	
 	    	if(value == null)
 	    		throw new KVException(ERROR_NO_SUCH_KEY);
 	    	
@@ -241,18 +241,12 @@ public class TPCMaster {
 			for(int i = 0; i < slaves.length; i++){
 				slaveSockets[i] = slaves[i].connectHost(TIMEOUT);
 				request.sendMessage(slaveSockets[i]);
-				KVMessage vote = new KVMessage(slaveSockets[i]);
-				if(!vote.getMsgType().equals(READY)){
-					return false;
-				}
 			}
-			/*
 			for(int i = 0; i < slaves.length; i++){
-				System.out.println(i + ": enter here");
 				KVMessage vote = new KVMessage(slaveSockets[i], TIMEOUT);
 				if(!vote.getMsgType().equals(READY))
 					return false;
-			}*/
+			}
 			return true;
 		}
 		catch (KVException e){
@@ -329,32 +323,38 @@ public class TPCMaster {
 	 * @return value if success,
 	 * 		null otherwise
 	 */
-	private String getFromSlave(TPCSlaveInfo slave, KVMessage msg) {
+	private String getFromSlaves(TPCSlaveInfo[] slaves, KVMessage msg) {
+		Socket[] slaveSockets = new Socket[slaves.length];
 		try{
-			Socket slaveSocket = slave.connectHost(TIMEOUT);
-			try{
-				msg.sendMessage(slaveSocket);
-				KVMessage response = new KVMessage(slaveSocket, TIMEOUT);
-				if(response.getValue() == null)
-					throw new KVException(response);
-				return response.getValue();
+			for(int i = 0; i < slaves.length; i++){
+				slaveSockets[i] = slaves[i].connectHost(TIMEOUT);
+				msg.sendMessage(slaveSockets[i]);
 			}
-			finally{
-				try {
-					slaveSocket.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			for(int i = 0; i < slaves.length; i++){
+				KVMessage response = new KVMessage(slaveSockets[i], TIMEOUT);
+				String val = response.getValue();
+				if(val != null)
+					return val;
+			}
+		}catch (KVException e){
+			return null;
+		}
+		finally{
+			for(int i = 0; i < slaves.length; i++){
+				if(slaveSockets[i] != null){
+					try {
+						slaves[i].closeHost(slaveSockets[i]);
+					} catch (KVException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
-		catch (KVException e){
-			return null;
-		}
+		return null;
 	}
 
-	public class SlaveIDComparator
-    	implements Comparator<Long>{
+	public class SlaveIDComparator implements Comparator<Long>{
     	public int compare(Long a, Long b){
     		if(isLessThanUnsigned(a.longValue(), b.longValue()))
     			return -1;
