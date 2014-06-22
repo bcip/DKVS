@@ -132,5 +132,11 @@ public class TPCLog {
     		}
     	}
     }
+    
+    public KVMessage getOperation(){
+    	KVMessage log = operation;
+    	operation = null;
+		return log;
+	}
 
 }

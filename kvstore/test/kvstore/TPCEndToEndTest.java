@@ -7,10 +7,11 @@ import java.util.Random;
 import org.junit.Test;
 
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
+	
 	@Test(timeout = 15000)
 	public void testPutGet() throws KVException {
 
-		int size = 10;
+		int size = 1;
 		String[] keys = new String[size];
 		String[] vals = new String[size];
 		for (Integer i = 0; i < size; i++) {
@@ -27,6 +28,10 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 
 		for (Integer i = 0; i < size; i++) {
+			try{
+				client.del(keys[i]);
+			}catch(KVException e){
+			}
 			System.out.println("Test of get key=" + keys[i]);
 			System.out.println("Expected to get value=" + vals[i]);
 			assertEquals(client.get(keys[i]), vals[i]);
@@ -36,10 +41,11 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		System.out.println();
 	}
 
+	/*
 	@Test(timeout = 15000)
     public void testPutGet2() throws KVException {
 			
-			int size = (int)(100 * (new Random().nextDouble()));
+			int size = (int)(100 * 1);//(new Random().nextDouble()));
 			String[] keys = new String[size];
 			String[] vals = new String[size];
 			for(Integer i = 0; i < size; i++){
@@ -59,7 +65,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 	@Test(timeout = 15000)
     public void testPutGet3() throws KVException {
 			
-			int size = (int)(100 * (new Random().nextDouble()));
+			int size = (int)(100 * 1);//(new Random().nextDouble()));
 			String[] keys = new String[size];
 			String[] vals = new String[size];
 			for(Integer i = 0; i < size; i++){
@@ -79,7 +85,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 	@Test(timeout = 15000)
     public void testPutGet4() throws KVException {
 			
-			int size = (int)(100 * (new Random().nextDouble()));
+			int size = (int)(100 * 1);//(new Random().nextDouble()));
 			String[] keys = new String[size];
 			String[] vals = new String[size];
 			for(Integer i = 0; i < size; i++){
@@ -132,8 +138,8 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			}
 		}
 		System.out.println();
-	}
-	
+	}*/
+	/*
 	@Test(timeout = 15000)
 	public void testInvalidKeyAndInvalidValue() {
 		System.out.println("Test put with null key");
@@ -174,4 +180,5 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
+	*/
 }

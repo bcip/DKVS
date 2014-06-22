@@ -43,7 +43,13 @@ public class TPCMaster {
     public void registerSlave(TPCSlaveInfo slave) {
         slavesLock.lock();
         try{
-        	slaves.put(slave.getSlaveID(), slave);
+        	synchronized(slaves){
+        		if(slaves.containsKey(slave.getSlaveID())) {
+        			slaves.get(slave.getSlaveID()).updateInfo(slave.getHostname(), slave.getPort());
+        		} else {
+        			slaves.put(slave.getSlaveID(), slave);
+        		}
+        	}
         	if(slaves.size() == numSlaves)
         		enoughSlaves.signalAll();
         }
@@ -165,13 +171,50 @@ public class TPCMaster {
     		TPCSlaveInfo[] slaves = findCorrespondingSlaves(key);
     		
     		KVMessage decision = null;
-    		if(collectVotes(slaves, msg)){
+    		///*
+    		CollectVote cv1 = new CollectVote(slaves[0], msg);
+    		CollectVote cv2 = new CollectVote(slaves[1], msg);
+        	
+        	Thread t1 = new Thread(cv1);
+        	Thread t2 = new Thread(cv2);
+        	
+        	t1.start();
+        	t2.start();
+        	
+        	try {
+        		t1.join();
+            	t2.join();
+        	} catch (InterruptedException e){
+        		System.out.println(e.getMessage());
+        	}
+        	//*/
+        	boolean isCommit = // collectVotes(slaves, msg); 
+        			cv1.vote != null && cv1.vote.getMsgType().equals(READY) &&
+        			cv2.vote != null && cv2.vote.getMsgType().equals(READY);
+    		if(isCommit){
     			decision = new KVMessage(COMMIT);
     		}
     		else{
     			decision = new KVMessage(ABORT);
     		}
-    		announceDecision(slaves, decision);
+    		///*
+    		AnnounceDecision ad1 = new AnnounceDecision(slaves[0], decision);
+    		AnnounceDecision ad2 = new AnnounceDecision(slaves[1], decision);
+        	
+        	Thread t3 = new Thread(ad1);
+        	Thread t4 = new Thread(ad2);
+        	
+        	t3.start();
+        	t4.start();
+        	
+        	try {
+        		t3.join();
+            	t4.join();
+        	} catch (InterruptedException e){
+        		System.out.println(e.getMessage());
+        	}
+    		//*/
+    		//announceDecision(slaves, decision);
     		if(decision.getMsgType().equals(ABORT))
     			//TODO which error to throw?
     			throw new KVException(ERROR_COULD_NOT_RECEIVE_DATA);
@@ -185,6 +228,111 @@ public class TPCMaster {
     	}
     	finally{
     		masterCache.getLock(key).unlock();
+    	}
+    }
+    
+    private class CollectVote implements Runnable {
+    	KVMessage vote = null;
+    	TPCSlaveInfo info;
+    	KVMessage request = null;
+    	
+    	public CollectVote(TPCSlaveInfo _info, KVMessage _request){
+    		this.info = _info;
+    		this.request = _request;
+    	}
+    	
+    	@Override
+    	public void run(){
+    		Socket slaveSocket = null;
+    		try{
+    			 slaveSocket = info.connectHost(TIMEOUT);
+    			request.sendMessage(slaveSocket);
+    			vote = new KVMessage(slaveSocket, TIMEOUT);
+    		}catch (KVException e) {
+    			vote = new KVMessage(ABORT);
+    		}finally {
+    			if(slaveSocket != null){
+					try {
+						info.closeHost(slaveSocket);
+					} catch (KVException e) {
+					}
+    			}
+    		}
+    	}
+    }
+    
+    private class AnnounceDecision implements Runnable {
+    	TPCSlaveInfo info;
+    	KVMessage decision = null;
+    	
+    	public AnnounceDecision(TPCSlaveInfo _info, KVMessage _decision){
+    		this.info = _info;
+    		this.decision = _decision;
+    	}
+    	
+    	@Override
+    	public void run(){
+    		Socket slaveSocket = null;
+    		boolean hasAck = false;
+    		while(true){
+    			if(hasAck)
+    				break;
+    			try{
+    				slaveSocket = info.connectHost(TIMEOUT);
+    				decision.sendMessage(slaveSocket);
+    			}catch(KVException e){
+    			}
+    			if(slaveSocket != null){
+    				try {
+    					KVMessage response = new KVMessage(slaveSocket, TIMEOUT);
+    					hasAck = true;
+    				}catch (KVException e) {
+    					//ignore
+    				}finally{
+    					try{
+    						info.closeHost(slaveSocket);
+    					}catch (KVException e){
+    						//ignore
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    private class GetFromSlave implements Runnable {
+    	KVMessage vote = null;
+    	TPCSlaveInfo info;
+    	KVMessage request = null;
+    	String value = null;
+    	KVMessage excepMsg = null;
+    	
+    	public GetFromSlave(TPCSlaveInfo _info, KVMessage _request){
+    		this.info = _info;
+    		this.request = _request;
+    	}
+    	
+    	@Override
+    	public void run(){
+    		Socket slaveSocket = null;
+    		try{
+    			slaveSocket = info.connectHost(TIMEOUT);
+    			request.sendMessage(slaveSocket);
+    			KVMessage response = new KVMessage(slaveSocket, TIMEOUT);
+    			value = response.getValue();
+    			if(value == null)
+    				excepMsg = response;
+    		}catch (KVException e){
+    			excepMsg = e.getKVMessage();
+    		}
+    		finally{
+    			if(slaveSocket != null){
+    				try {
+    					info.closeHost(slaveSocket);
+    				} catch (KVException e) {
+   					}
+   				}
+    		}
     	}
     }
     
@@ -215,7 +363,27 @@ public class TPCMaster {
 	    	}
 	    	TPCSlaveInfo[] slaves = findCorrespondingSlaves(key);
 	    	
-	    	value = getFromSlaves(slaves, msg);
+	    	GetFromSlave gfs1 = new GetFromSlave(slaves[0], msg);
+	    	GetFromSlave gfs2 = new GetFromSlave(slaves[1], msg);
+	    	
+	    	Thread t1 = new Thread(gfs1);
+	    	Thread t2 = new Thread(gfs2);
+	    	
+	    	t1.start();
+	    	t2.start();
+	    	
+	    	try {
+        		t1.join();
+        		if(gfs1.value != null)
+    	    		value = gfs1.value;
+            	t2.join();
+            	if(gfs2.value != null)
+    	    		value = gfs2.value;
+        	} catch (InterruptedException e){
+        		System.out.println(e.getMessage());
+        	}
+	    	
+	    	//value = getFromSlaves(slaves, msg);
 	    	
 	    	if(value == null)
 	    		throw new KVException(ERROR_NO_SUCH_KEY);

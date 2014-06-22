@@ -74,7 +74,7 @@ public class SocketServer {
 			} else {
 				server = new ServerSocket(port);
 			}
-			//server.setSoTimeout(TIMEOUT);
+			server.setSoTimeout(TIMEOUT);
     	}catch(IOException e){
     	}
     }
@@ -92,25 +92,15 @@ public class SocketServer {
         	try{
         		Socket socket = this.server.accept();
         		handler.handle(socket);
-        		server.setSoTimeout(TIMEOUT);
         	} catch (SocketTimeoutException e){
-        		//ignore
-        	//	System.out.println("server time out");
         	} catch (IOException e) {
-        	//	System.out.println("server io exception");
-			} catch (NullPointerException e) {
-				System.out.println("null pointer in while");
-				if(!stopped)
-					connect();
 			}
         }
         try {
         	server.close();
         } catch (IOException e) {
             throw e;
-        } catch (NullPointerException e) {
-        	System.out.println("null pointer when close");
-		}
+        }
     }
 
     /**
