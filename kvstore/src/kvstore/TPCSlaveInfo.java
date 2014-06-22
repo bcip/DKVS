@@ -75,7 +75,9 @@ public class TPCSlaveInfo {
         } catch (UnknownHostException ex) {
             throw new KVException(new KVMessage(
                 RESP, ERROR_COULD_NOT_CONNECT));
-        } catch (IOException ex) {
+        }catch(SocketTimeoutException ex){
+        	throw new KVException(new KVMessage(RESP, "TIME OUT"));
+        }catch (IOException ex) {
             throw new KVException(new KVMessage(
                 RESP, ERROR_COULD_NOT_CREATE_SOCKET));
         }

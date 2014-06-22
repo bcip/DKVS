@@ -129,15 +129,15 @@ public class TPCMasterHandler implements NetworkHandler {
 				if(log != null)
 				{
 					if(log.getMsgType().equals(DEL_REQ) ||
-							log.getMsgType().equals(PUT_REQ))
+						log.getMsgType().equals(PUT_REQ))
 						response = new KVMessage(ABORT);
-					else if(log.getMsgType().equals(ACK)){
+					if(log.getMsgType().equals(ACK)){
 						response = new KVMessage(ACK);
 					}
-						
 				} else {
 
 					KVMessage request = new KVMessage(master);
+					
 					if (request.getMsgType().equals(GET_REQ)) {
 						String key = request.getKey();
 						String value = kvServer.get(key);
@@ -152,7 +152,6 @@ public class TPCMasterHandler implements NetworkHandler {
 					if (request.getMsgType().equals(ABORT)) {
 						tpcLog.appendAndFlush(request);
 						response = new KVMessage(ACK);
-						tpcLog.appendAndFlush(response);
 					} else if (request.getMsgType().equals(COMMIT)) {
 						request = tpcLog.getLastEntry();
 						tpcLog.appendAndFlush(request);
@@ -165,7 +164,6 @@ public class TPCMasterHandler implements NetworkHandler {
 							kvServer.put(key, value);
 						}
 						response = new KVMessage(ACK);
-						tpcLog.appendAndFlush(response);
 					}
 					if (response == null) {
 						throw new KVException(ERROR_INVALID_FORMAT);
@@ -178,6 +176,8 @@ public class TPCMasterHandler implements NetworkHandler {
 
 			try {
 				response.sendMessage(master);
+				if(response.getMsgType().equals(ACK))
+					tpcLog.appendAndFlush(response);
 			} catch (KVException e) {
 				// ignore
 			}

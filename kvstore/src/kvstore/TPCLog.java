@@ -109,7 +109,7 @@ public class TPCLog {
      */
     public void rebuildServer() throws KVException {
         // implement me
-    	loadFromDisk();
+    	this.loadFromDisk();
     	for(KVMessage entry : entries){
     		if (entry.getMsgType().equals(PUT_REQ)
     				|| entry.getMsgType().equals(DEL_REQ)){

@@ -249,7 +249,8 @@ public class TPCMaster {
     			request.sendMessage(slaveSocket);
     			vote = new KVMessage(slaveSocket, TIMEOUT);
     		}catch (KVException e) {
-    			vote = new KVMessage(ABORT);
+    			if(e.getKVMessage().getMessage().equals("TIME OUT"))
+    				vote = new KVMessage(ABORT);
     		}finally {
     			if(slaveSocket != null){
 					try {
@@ -280,7 +281,7 @@ public class TPCMaster {
     			try{
     				slaveSocket = info.connectHost(TIMEOUT);
     				decision.sendMessage(slaveSocket);
-    			}catch(KVException e){
+    			}catch(Exception e){
     			}
     			if(slaveSocket != null){
     				try {
