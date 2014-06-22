@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage{amsmath}
 \usepackage{algorithm}
-\usepackage{algpseudocode}
+\usepackage{algpseudocode,lineno}
 \usepackage{listings, xcolor}
 \usepackage{paralist}
 \usepackage{chngpage}
@@ -59,8 +59,7 @@ and rebuild the server during recovery.
 \texttt{KVMessage} \texttt{operation} to keep track of interrupted 2PC operation.
 \subsection{Description}
 In \texttt{KVMessage}, we only add support for new message types.
-\begin{algorithm}
-	\caption{\texttt{class TCPLog}}
+\begin{bframe}
 	\begin{algorithmic}
 		\Procedure{rebuildServer}{ }
 			\State \texttt{isCommit} $\leftarrow$ \texttt{false}
@@ -83,7 +82,7 @@ In \texttt{KVMessage}, we only add support for new message types.
 			\EndFor
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
+\end{bframe}
 
 \subsection{Test}
 \begin{compactitem}
@@ -108,8 +107,7 @@ we define a regex expression in \texttt{TPCSlaveInfo} that  \\
 \texttt{Pattern SLAVE\_INFO\_REGEX = Pattern.compile(``\^(.*)@(.*):(.*)\$'')}.
 
 \subsection{Description}
-\begin{algorithm}
-	\caption{\texttt{class TPCRegistrationHandler}}
+\begin{bframe}
 	\begin{algorithmic}
 		\Procedure{handle}{\texttt{Socket} slave}
 			\State threadpool.addJob(\texttt{new RegistrationHandler}(slave))
@@ -130,9 +128,6 @@ we define a regex expression in \texttt{TPCSlaveInfo} that  \\
 			\State slave.close()
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
-\begin{algorithm}
-	\caption{\texttt{class TPCSlaveInfo}}
 	\begin{algorithmic}
 		\Procedure{TPCSlaveInfo}{String info}
 			\State slaveInfoMatcher $\leftarrow$ \texttt{SLAVE\_INFO\_REGEX..matcher(info)}
@@ -153,9 +148,6 @@ we define a regex expression in \texttt{TPCSlaveInfo} that  \\
 			\State sock.close()
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
-\begin{algorithm}
-	\caption{\texttt{class TPCMasterHandler}}
 	\begin{algorithmic}
 		\Procedure{registerWiithMaster}{String masterHostname, SocketServer server}
 			\State master $\leftarrow$ \texttt{new Socket(masterHostname, 9090)}
@@ -167,7 +159,7 @@ we define a regex expression in \texttt{TPCSlaveInfo} that  \\
 			\State master.close()
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
+\end{bframe}
 \subsection{Test}
 \begin{compactitem}
 	\item Test whether slave server can register successfully;
@@ -189,8 +181,7 @@ Implement consistent hashing in \texttt{TPCMaster} to find the slaves involved i
 	\item New \texttt{class ULComp} which implements \texttt{Comparator<Long>} for \texttt{TreeMap}.
 \end{compactitem}
 \subsection{Description}
-\begin{algorithm}
-	\caption{\texttt{class TPCMaster}}
+\begin{bframe}
 	\begin{algorithmic}
 		\Procedure{ULComp.compare}{Long l1, Long l2}
 		\If{isLessThanUnsigned(l1, l2)}
@@ -227,9 +218,6 @@ Implement consistent hashing in \texttt{TPCMaster} to find the slaves involved i
 			\EndIf
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
-\begin{algorithm}
-	\caption{\texttt{class TPCClientHandler}}
 	\begin{algorithmic}
 		\Procedure{ClientHandler.run}{}
 			\State \texttt{reqMsg} $\leftarrow$ \texttt{new KVMessage(client)}
@@ -242,7 +230,7 @@ Implement consistent hashing in \texttt{TPCMaster} to find the slaves involved i
 			\State \texttt{ackMsg.sendMessage(client)}
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
+\end{bframe}
 \subsection{Test}
 \begin{compactitem}
 	\item Test whether the correctness location of consistent hashing: \texttt{findFirstReplica} and \texttt{findSuccessor};
@@ -254,8 +242,7 @@ Implement the rest of \texttt{TPCMaster} for two-phase commit logic on the maste
 \subsection{Correctness Constraints}
 \subsection{Declaration}
 \subsection{Description}
-\begin{algorithm}
-	\caption{\texttt{class TPCMaster}}
+\begin{bframe}
 	\begin{algorithmic}
 		\Procedure{getFromSlave}{\texttt{KVMessage msg, TPCSlaveInfo info, String key}}
 			\State \texttt{slaveSocket} $\leftarrow$ \texttt{info.connectHost(TIMEOUT\_MILLISECONDS)}
@@ -295,9 +282,6 @@ Implement the rest of \texttt{TPCMaster} for two-phase commit logic on the maste
 		\EndIf
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
-\begin{algorithm}
-	\caption{\texttt{class TPCMaster}}
 	\begin{algorithmic}
 		\Procedure{handleTPCRequest}{\texttt{KVMessage msg, boolean isPutReq}}
 			\State \texttt{key} $\leftarrow$ \texttt{msg.getKey()}
@@ -343,7 +327,7 @@ Implement the rest of \texttt{TPCMaster} for two-phase commit logic on the maste
 			\State \texttt{masterCache.getLock(key).writeLock().unlock()}
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
+\end{bframe}
 \subsection{Test}
 \begin{compactitem}
 	\item Test \texttt{GET} requests;
@@ -359,8 +343,7 @@ Implement \texttt{TPCMasterHandler} that handles TPC logic on the slave servers.
 \end{compactitem}
 \subsection{Declaration}
 \subsection{Description}
-\begin{algorithm}
-	\caption{\texttt{class TPCMasterHandler}}
+\begin{bframe}
 	\begin{algorithmic}
 		\Procedure{MasterHandler.run}{ }
 			\State \texttt{msMsg} $\leftarrow$ \texttt{new KVMessage(master)}
@@ -399,7 +382,7 @@ Implement \texttt{TPCMasterHandler} that handles TPC logic on the slave servers.
 			\State \texttt{ackMsg.sendMessage(master)}
 		\EndProcedure
 	\end{algorithmic}
-\end{algorithm}
+\end{bframe}
 \subsection{Test}
 \begin{compactitem}
 	\item Overall test using \texttt{TPCEndToEndTest}
