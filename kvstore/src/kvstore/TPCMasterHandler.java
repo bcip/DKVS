@@ -17,6 +17,8 @@ public class TPCMasterHandler implements NetworkHandler {
 	private TPCLog tpcLog;
 	private ThreadPool threadpool;
 
+	private static final int MAX_KEY_SIZE = 256;
+    private static final int MAX_VAL_SIZE = 256 * 1024;
 	/**
 	 * Constructs a TPCMasterHandler with one connection in its ThreadPool
 	 * 
@@ -52,6 +54,23 @@ public class TPCMasterHandler implements NetworkHandler {
 		this.threadpool = new ThreadPool(connections);
 	}
 
+	private void checkKey(String key) throws KVException{
+    	if(key == null || key.length() == 0){
+    		throw new KVException(new KVMessage(RESP, ERROR_INVALID_KEY));
+    	}
+    	if(key.length() > MAX_KEY_SIZE){
+    		throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_KEY));
+    	}
+    }
+    private void checkValue(String value) throws KVException{
+    	if(value == null || value.length() == 0 || value.length() > MAX_VAL_SIZE){
+    		throw new KVException(new KVMessage(RESP, ERROR_INVALID_VALUE));
+    	}
+    	if(value.length() > MAX_VAL_SIZE){
+    		throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_VALUE));
+    	}
+    }
+	
 	/**
 	 * Registers this slave server with the master.
 	 * 
@@ -138,12 +157,16 @@ public class TPCMasterHandler implements NetworkHandler {
 					
 					if (request.getMsgType().equals(GET_REQ)) {
 						String key = request.getKey();
+						checkKey(key);
 						String value = kvServer.get(key);
 						response = new KVMessage(RESP);
 						response.setKey(key);
 						response.setValue(value);
 					} else if (request.getMsgType().equals(DEL_REQ)
 							|| request.getMsgType().equals(PUT_REQ)) {
+						checkKey(request.getKey());
+						if(request.getMsgType().equals(PUT_REQ))
+							checkValue(request.getValue());
 						tpcLog.appendAndFlush(request);
 						response = new KVMessage(READY);
 					}
@@ -152,15 +175,18 @@ public class TPCMasterHandler implements NetworkHandler {
 						response = new KVMessage(ACK);
 					} else if (request.getMsgType().equals(COMMIT)) {
 						request = tpcLog.getLastEntry();
-						tpcLog.appendAndFlush(new KVMessage(COMMIT));
 						if (request.getMsgType().equals(DEL_REQ)) {
 							String key = request.getKey();
+							checkKey(key);
 							kvServer.del(key);
 						} else if (request.getMsgType().equals(PUT_REQ)) {
 							String key = request.getKey();
 							String value = request.getValue();
+							checkKey(key);
+							checkValue(value);
 							kvServer.put(key, value);
 						}
+						tpcLog.appendAndFlush(new KVMessage(COMMIT));
 						response = new KVMessage(ACK);
 					}
 					if (response == null) {

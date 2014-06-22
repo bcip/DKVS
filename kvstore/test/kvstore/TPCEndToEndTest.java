@@ -7,7 +7,7 @@ import java.util.Random;
 import org.junit.Test;
 
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
-	/*
+	
 	@Test(timeout = 15000)
 	public void testPutGet() throws KVException {
 
@@ -37,6 +37,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		System.out.println();
 	}
 
+	
 	@Test(timeout = 15000)
     public void testPutGet2() throws KVException {
 
@@ -132,8 +133,9 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
-	*/
-	@Test(timeout = 15000)
+	
+	///*
+	@Test(timeout = 20000)
 	public void testInvalidKeyAndInvalidValue() {
 		System.out.println("Test put with null key");
 		try {
@@ -220,4 +222,5 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
+	//*/
 }

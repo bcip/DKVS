@@ -249,8 +249,8 @@ public class TPCMaster {
     			request.sendMessage(slaveSocket);
     			vote = new KVMessage(slaveSocket, TIMEOUT);
     		}catch (KVException e) {
-    			if(e.getKVMessage().getMessage().equals("TIME OUT"))
-    				vote = new KVMessage(ABORT);
+    			//if(e.getKVMessage().getMessage().equals("TIME OUT"))
+    			vote = new KVMessage(ABORT);
     		}finally {
     			if(slaveSocket != null){
 					try {
@@ -286,7 +286,11 @@ public class TPCMaster {
     			if(slaveSocket != null){
     				try {
     					KVMessage response = new KVMessage(slaveSocket, TIMEOUT);
-    					hasAck = true;
+    					if(response != null && response.getMsgType().equals(ACK))
+    						hasAck = true;
+    					//else{
+    					//	System.out.println(response.getMsgType() + ": " + response.getMessage());
+    					//}
     				}catch (KVException e) {
     					//ignore
     				}finally{
