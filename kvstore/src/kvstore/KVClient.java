@@ -14,6 +14,9 @@ public class KVClient implements KeyValueInterface {
 
     private String server;
     private int port;
+    
+    private static final int MAX_KEY_SIZE = 256;
+    private static final int MAX_VAL_SIZE = 256 * 1024;
 
     /**
      * Constructs a KVClient connected to a server.
@@ -30,10 +33,16 @@ public class KVClient implements KeyValueInterface {
     	if(key == null || key.length() == 0){
     		throw new KVException(new KVMessage(RESP, ERROR_INVALID_KEY));
     	}
+    	if(key.length() > MAX_KEY_SIZE){
+    		throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_KEY));
+    	}
     }
     private void checkValue(String value) throws KVException{
-    	if(value == null || value.length() == 0){
+    	if(value == null || value.length() == 0 || value.length() > MAX_VAL_SIZE){
     		throw new KVException(new KVMessage(RESP, ERROR_INVALID_VALUE));
+    	}
+    	if(value.length() > MAX_VAL_SIZE){
+    		throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_VALUE));
     	}
     }
     

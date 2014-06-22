@@ -7,6 +7,7 @@ import java.util.Random;
 import org.junit.Test;
 
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
+	/*
 	@Test(timeout = 15000)
 	public void testPutGet() throws KVException {
 
@@ -131,6 +132,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
+	*/
 	@Test(timeout = 15000)
 	public void testInvalidKeyAndInvalidValue() {
 		System.out.println("Test put with null key");
@@ -167,6 +169,53 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			client.put("test", "");
 		} catch (KVException e){
 			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_VALUE);
+			System.out.println("Success in empty value");
+		}
+		System.out.println();
+		
+		System.out.println("Test del with nonexist value");
+		try {
+			client.del("nonexist");
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_NO_SUCH_KEY);
+			System.out.println("Success in nonexist key");
+		}
+		System.out.println();
+		
+		System.out.println("Test del with too long value");
+		try {
+			client.del("111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					+ "111111111111111111111111111111111111111111111111111111111"
+					);
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_OVERSIZED_KEY);
+			System.out.println("Success in too long key");
+		}
+		System.out.println();
+		
+		System.out.println("Test del with empty value");
+		try {
+			client.del("");
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
+			System.out.println("Success in empty value");
+		}
+		System.out.println();
+		
+		System.out.println("Test del with null value");
+		try {
+			client.del(null);
+		} catch (KVException e){
+			assertEquals(e.getKVMessage().getMessage(), KVConstants.ERROR_INVALID_KEY);
 			System.out.println("Success in empty value");
 		}
 		System.out.println();
