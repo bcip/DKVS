@@ -7,7 +7,6 @@ import java.util.Random;
 import org.junit.Test;
 
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
-
 	@Test(timeout = 15000)
 	public void testPutGet() throws KVException {
 
@@ -26,12 +25,11 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		//assertEquals(client.get(keys[0]), vals[0]);
 		System.out.println();
 	}
-
-	/*
+///*
 	@Test(timeout = 15000)
     public void testPutGet2() throws KVException {
 			
-			int size = (int)(100 * 1);//(new Random().nextDouble()));
+			int size = 1;//(new Random().nextDouble()));
 			String[] keys = new String[size];
 			String[] vals = new String[size];
 			for(Integer i = 0; i < size; i++){
@@ -47,7 +45,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 				assertEquals(client.get(keys[i]), vals[i]);
 			System.out.println();
 	}
-	
+	//*/
 	@Test(timeout = 15000)
     public void testPutGet3() throws KVException {
 			
@@ -87,9 +85,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 				assertEquals(client.get(keys[i]), vals[i]);
 			System.out.println();
 	}
-	*/
 	
-	/*
 	@Test(timeout = 15000)
 	public void testDel() throws KVException {
 
@@ -127,9 +123,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
-	*/
 	
-	/*
 	@Test(timeout = 15000)
 	public void testInvalidKeyAndInvalidValue() {
 		System.out.println("Test put with null key");
@@ -170,5 +164,4 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		}
 		System.out.println();
 	}
-	*/
 }

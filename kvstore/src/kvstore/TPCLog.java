@@ -110,6 +110,7 @@ public class TPCLog {
     public void rebuildServer() throws KVException {
         // implement me
     	this.loadFromDisk();
+    	
     	for(KVMessage entry : entries){
     		if (entry.getMsgType().equals(PUT_REQ)
     				|| entry.getMsgType().equals(DEL_REQ)){
@@ -128,7 +129,8 @@ public class TPCLog {
     		} else if (entry.getMsgType().equals(KVConstants.ABORT)){
     			operation = new KVMessage(KVConstants.ACK);
     		} else if (entry.getMsgType().equals(KVConstants.ACK)
-    					&& operation.getMsgType().equals(KVConstants.ACK)) {
+    					&& operation.getMsgType().equals(KVConstants.ACK)) 
+    		{
     			operation = null;
     		} else {
     			assert(false);

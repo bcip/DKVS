@@ -126,11 +126,9 @@ public class TPCMasterHandler implements NetworkHandler {
 			KVMessage response = null;
 			try {
 				KVMessage log = tpcLog.getOperation();
-				if(log != null)
+				if(log != null && !(log.getMsgType().equals(DEL_REQ) ||
+					   log.getMsgType().equals(PUT_REQ)))
 				{
-					if(log.getMsgType().equals(DEL_REQ) ||
-						log.getMsgType().equals(PUT_REQ))
-						response = new KVMessage(ABORT);
 					if(log.getMsgType().equals(ACK)){
 						response = new KVMessage(ACK);
 					}
@@ -154,7 +152,7 @@ public class TPCMasterHandler implements NetworkHandler {
 						response = new KVMessage(ACK);
 					} else if (request.getMsgType().equals(COMMIT)) {
 						request = tpcLog.getLastEntry();
-						tpcLog.appendAndFlush(request);
+						tpcLog.appendAndFlush(new KVMessage(COMMIT));
 						if (request.getMsgType().equals(DEL_REQ)) {
 							String key = request.getKey();
 							kvServer.del(key);
