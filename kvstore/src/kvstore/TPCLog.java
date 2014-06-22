@@ -130,7 +130,7 @@ public class TPCLog {
     		} else if (entry.getMsgType().equals(KVConstants.ACK)
     					&& operation.getMsgType().equals(KVConstants.ACK)) {
     			operation = null;
-    		} {
+    		} else {
     			assert(false);
     		}
     	}
