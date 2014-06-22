@@ -129,10 +129,10 @@ public class TPCLog {
 	    			}
     			}
     			operation = new KVMessage(KVConstants.ACK);
-    			System.out.println("set operation: " + operation.getMsgType());
+    			System.out.println(entry.getMsgType() + ": " + operation.getMsgType());
     		} else if (entry.getMsgType().equals(KVConstants.ABORT)){
     			operation = new KVMessage(KVConstants.ACK);
-    			System.out.println("set operation: " + operation.getMsgType());
+    			System.out.println(entry.getMsgType() + ": " + operation.getMsgType());
     		} else if (entry.getMsgType().equals(KVConstants.ACK)
     					&& operation.getMsgType().equals(KVConstants.ACK)) {
     			operation = null;

@@ -7,7 +7,7 @@ import java.util.Random;
 import org.junit.Test;
 
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
-	/*
+	
 	@Test(timeout = 15000)
     public void testPutGet2() throws KVException {
 
@@ -35,7 +35,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 				System.out.println(e.getKVMessage().getMessage());
 			}
 	}
-	*/
+	//*/
 	@Test(timeout = 15000)
 	public void testPutGet() throws KVException {
 

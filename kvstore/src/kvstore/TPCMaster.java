@@ -215,9 +215,10 @@ public class TPCMaster {
         	}
     		//*/
     		//announceDecision(slaves, decision);
+        	
+        	// see 2pc requirement 7
     		if(decision.getMsgType().equals(ABORT))
-    			//TODO which error to throw?
-    			throw new KVException(ERROR_COULD_NOT_RECEIVE_DATA);
+    			throw new KVException(ERROR_INVALID_FORMAT);
 
     		if(isPutReq){
     			masterCache.put(key, value);
@@ -288,8 +289,10 @@ public class TPCMaster {
     					KVMessage response = new KVMessage(slaveSocket, TIMEOUT);
     					if(response != null && response.getMsgType().equals(ACK))
     						hasAck = true;
-    					//else{
-    					//	System.out.println(response.getMsgType() + ": " + response.getMessage());
+    					
+    					// see two-phase requirement 7
+    					if(response != null && !response.getMsgType().equals(ACK))
+    						decision = new KVMessage(ABORT);
     					//}
     				}catch (KVException e) {
     					//ignore

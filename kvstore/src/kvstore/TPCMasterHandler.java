@@ -164,11 +164,12 @@ public class TPCMasterHandler implements NetworkHandler {
 						response.setValue(value);
 					} else if (request.getMsgType().equals(DEL_REQ)
 							|| request.getMsgType().equals(PUT_REQ)) {
-						if(request.getMsgType().equals(PUT_REQ))
-							checkValue(request.getValue());
-						else
-							kvServer.get(request.getKey());
 						tpcLog.appendAndFlush(request);
+						if(request.getMsgType().equals(PUT_REQ)){
+							checkValue(request.getValue());
+							checkKey(request.getKey());
+						}else
+							kvServer.get(request.getKey());
 						response = new KVMessage(READY);
 					}
 					if (request.getMsgType().equals(ABORT)) {
@@ -176,6 +177,7 @@ public class TPCMasterHandler implements NetworkHandler {
 						response = new KVMessage(ACK);
 					} else if (request.getMsgType().equals(COMMIT)) {
 						request = tpcLog.getLastEntry();
+						tpcLog.appendAndFlush(new KVMessage(COMMIT));
 						if (request.getMsgType().equals(DEL_REQ)) {
 							String key = request.getKey();
 							checkKey(key);
@@ -187,7 +189,6 @@ public class TPCMasterHandler implements NetworkHandler {
 							checkValue(value);
 							kvServer.put(key, value);
 						}
-						tpcLog.appendAndFlush(new KVMessage(COMMIT));
 						response = new KVMessage(ACK);
 					}
 					if (response == null) {
