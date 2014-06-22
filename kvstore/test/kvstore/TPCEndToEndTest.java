@@ -2,6 +2,8 @@ package kvstore;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Random;
+
 import org.junit.Test;
 
 public class TPCEndToEndTest extends TPCEndToEndTemplate {
@@ -25,6 +27,66 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			System.out.println();
 	}
 
+	@Test(timeout = 15000)
+    public void testPutGet2() throws KVException {
+			
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+	
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+			
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+	
+	@Test(timeout = 15000)
+    public void testPutGet3() throws KVException {
+			
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+	
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+			
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+	
+	@Test(timeout = 15000)
+    public void testPutGet4() throws KVException {
+			
+			int size = (int)(100 * (new Random().nextDouble()));
+			String[] keys = new String[size];
+			String[] vals = new String[size];
+			for(Integer i = 0; i < size; i++){
+				keys[i] = "pkey" + i.toString();
+				vals[i] = "pval" + i.toString();
+			}
+	
+			System.out.println("Test Put and Get");
+			for(Integer i = 0; i < size; i++)
+				client.put(keys[i], vals[i]);
+			
+			for(Integer i = 0; i < size; i++)
+				assertEquals(client.get(keys[i]), vals[i]);
+			System.out.println();
+	}
+	
 	@Test(timeout = 15000)
 	public void testDel() throws KVException {
 		
