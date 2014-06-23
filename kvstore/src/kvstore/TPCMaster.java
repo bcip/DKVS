@@ -251,7 +251,6 @@ public class TPCMaster {
     			request.sendMessage(slaveSocket);
     			vote = new KVMessage(slaveSocket, TIMEOUT);
     		}catch (KVException e) {
-    			//if(e.getKVMessage().getMessage().equals("TIME OUT"))
     			vote = new KVMessage(e.getKVMessage());
     		}finally {
     			if(slaveSocket != null){
@@ -293,10 +292,6 @@ public class TPCMaster {
     					
     					// see two-phase requirement 7
     					if(response != null && !response.getMsgType().equals(ACK)){
-    						/*
-    						hasAck = true;
-    						decision = new KVMessage(ABORT);
-    						*/
     						assert(false);
     					}
     					//}

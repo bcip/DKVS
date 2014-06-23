@@ -18,7 +18,8 @@ public class TPCMasterHandler implements NetworkHandler {
 	private ThreadPool threadpool;
 
 	private static final int MAX_KEY_SIZE = 256;
-    private static final int MAX_VAL_SIZE = 256 * 1024;
+	private static final int MAX_VAL_SIZE = 256 * 1024;
+
 	/**
 	 * Constructs a TPCMasterHandler with one connection in its ThreadPool
 	 * 
@@ -54,23 +55,25 @@ public class TPCMasterHandler implements NetworkHandler {
 		this.threadpool = new ThreadPool(connections);
 	}
 
-	private void checkKey(String key) throws KVException{
-    	if(key == null || key.length() == 0){
-    		throw new KVException(new KVMessage(RESP, ERROR_INVALID_KEY));
-    	}
-    	if(key.length() > MAX_KEY_SIZE){
-    		throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_KEY));
-    	}
-    }
-    private void checkValue(String value) throws KVException{
-    	if(value == null || value.length() == 0 || value.length() > MAX_VAL_SIZE){
-    		throw new KVException(new KVMessage(RESP, ERROR_INVALID_VALUE));
-    	}
-    	if(value.length() > MAX_VAL_SIZE){
-    		throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_VALUE));
-    	}
-    }
-	
+	private void checkKey(String key) throws KVException {
+		if (key == null || key.length() == 0) {
+			throw new KVException(new KVMessage(RESP, ERROR_INVALID_KEY));
+		}
+		if (key.length() > MAX_KEY_SIZE) {
+			throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_KEY));
+		}
+	}
+
+	private void checkValue(String value) throws KVException {
+		if (value == null || value.length() == 0
+				|| value.length() > MAX_VAL_SIZE) {
+			throw new KVException(new KVMessage(RESP, ERROR_INVALID_VALUE));
+		}
+		if (value.length() > MAX_VAL_SIZE) {
+			throw new KVException(new KVMessage(RESP, ERROR_OVERSIZED_VALUE));
+		}
+	}
+
 	/**
 	 * Registers this slave server with the master.
 	 * 
@@ -144,66 +147,56 @@ public class TPCMasterHandler implements NetworkHandler {
 		public void run() {
 			KVMessage response = null;
 			try {
-				/*
-				KVMessage log = tpcLog.getOperation();
-				if(log != null && !(log.getMsgType().equals(DEL_REQ) ||
-					   log.getMsgType().equals(PUT_REQ)))
-				{
-					if(log.getMsgType().equals(ACK)){
-						response = new KVMessage(ACK);
-					}
-				} else {
-				*/
-					KVMessage request = new KVMessage(master);
-					
-					if (request.getMsgType().equals(GET_REQ)) {
+				KVMessage request = new KVMessage(master);
+
+				if (request.getMsgType().equals(GET_REQ)) {
+					String key = request.getKey();
+					checkKey(key);
+					String value = kvServer.get(key);
+					response = new KVMessage(RESP);
+					response.setKey(key);
+					response.setValue(value);
+				} else if (request.getMsgType().equals(DEL_REQ)
+						|| request.getMsgType().equals(PUT_REQ)) {
+					tpcLog.appendAndFlush(request);
+					if (request.getMsgType().equals(PUT_REQ)) {
+						checkValue(request.getValue());
+						checkKey(request.getKey());
+					} else
+						kvServer.get(request.getKey());
+					response = new KVMessage(READY);
+				}
+				if (request.getMsgType().equals(ABORT)) {
+					tpcLog.appendAndFlush(request);
+					response = new KVMessage(ACK);
+				} else if (request.getMsgType().equals(COMMIT)) {
+					request = tpcLog.getLastEntry();
+					tpcLog.appendAndFlush(new KVMessage(COMMIT));
+					if (request.getMsgType().equals(DEL_REQ)) {
 						String key = request.getKey();
 						checkKey(key);
-						String value = kvServer.get(key);
-						response = new KVMessage(RESP);
-						response.setKey(key);
-						response.setValue(value);
-					} else if (request.getMsgType().equals(DEL_REQ)
-							|| request.getMsgType().equals(PUT_REQ)) {
-						tpcLog.appendAndFlush(request);
-						if(request.getMsgType().equals(PUT_REQ)){
-							checkValue(request.getValue());
-							checkKey(request.getKey());
-						}else
-							kvServer.get(request.getKey());
-						response = new KVMessage(READY);
+						kvServer.del(key);
+					} else if (request.getMsgType().equals(PUT_REQ)) {
+						String key = request.getKey();
+						String value = request.getValue();
+						checkKey(key);
+						checkValue(value);
+						kvServer.put(key, value);
 					}
-					if (request.getMsgType().equals(ABORT)) {
-						tpcLog.appendAndFlush(request);
-						response = new KVMessage(ACK);
-					} else if (request.getMsgType().equals(COMMIT)) {
-						request = tpcLog.getLastEntry();
-						tpcLog.appendAndFlush(new KVMessage(COMMIT));
-						if (request.getMsgType().equals(DEL_REQ)) {
-							String key = request.getKey();
-							checkKey(key);
-							kvServer.del(key);
-						} else if (request.getMsgType().equals(PUT_REQ)) {
-							String key = request.getKey();
-							String value = request.getValue();
-							checkKey(key);
-							checkValue(value);
-							kvServer.put(key, value);
-						}
-						response = new KVMessage(ACK);
-					}
-					if (response == null) {
-						throw new KVException(ERROR_INVALID_FORMAT);
-					}
+					response = new KVMessage(ACK);
+				}
+				if (response == null) {
+					throw new KVException(ERROR_INVALID_FORMAT);
+				}
 
-				//}
+				// }
 			} catch (KVException e) {
 				response = e.getKVMessage();
 			}
 
 			try {
 				response.sendMessage(master);
-				if(response.getMsgType().equals(ACK))
+				if (response.getMsgType().equals(ACK))
 					tpcLog.appendAndFlush(response);
 			} catch (KVException e) {
 				// ignore
