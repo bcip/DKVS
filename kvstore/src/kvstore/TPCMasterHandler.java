@@ -144,6 +144,7 @@ public class TPCMasterHandler implements NetworkHandler {
 		public void run() {
 			KVMessage response = null;
 			try {
+				/*
 				KVMessage log = tpcLog.getOperation();
 				if(log != null && !(log.getMsgType().equals(DEL_REQ) ||
 					   log.getMsgType().equals(PUT_REQ)))
@@ -152,7 +153,7 @@ public class TPCMasterHandler implements NetworkHandler {
 						response = new KVMessage(ACK);
 					}
 				} else {
-
+				*/
 					KVMessage request = new KVMessage(master);
 					
 					if (request.getMsgType().equals(GET_REQ)) {
@@ -195,7 +196,7 @@ public class TPCMasterHandler implements NetworkHandler {
 						throw new KVException(ERROR_INVALID_FORMAT);
 					}
 
-				}
+				//}
 			} catch (KVException e) {
 				response = e.getKVMessage();
 			}

@@ -32,7 +32,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			try{
 				client.get("key1");
 			}catch(KVException e){
-				System.out.println(e.getKVMessage().getMessage());
+				System.out.println("get:" + e.getKVMessage().getMessage());
 			}
 	}
 	//*/
@@ -54,7 +54,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 			try{
 				client.put(keys[i], vals[i]);
 			}catch(KVException e){
-				System.out.println(e.getKVMessage().getMessage());
+				System.out.println("put:" + e.getKVMessage().getMessage());
 			}
 			System.out.println();
 		}
@@ -70,7 +70,7 @@ public class TPCEndToEndTest extends TPCEndToEndTemplate {
 		try{
 			client.del(keys[1]);
 		}catch(KVException e){
-			System.out.println(e.getKVMessage().getMessage());
+			System.out.println("del:" + e.getKVMessage().getMessage());
 		}
 		System.out.println();
 	}

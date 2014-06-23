@@ -191,6 +191,7 @@ public class TPCMaster {
         	boolean isCommit = // collectVotes(slaves, msg); 
         			cv1.vote != null && cv1.vote.getMsgType().equals(READY) &&
         			cv2.vote != null && cv2.vote.getMsgType().equals(READY);
+        	KVMessage errMsg = cv1.vote == null ? cv2.vote : cv1.vote;
     		if(isCommit){
     			decision = new KVMessage(COMMIT);
     		}
@@ -218,7 +219,7 @@ public class TPCMaster {
         	
         	// see 2pc requirement 7
     		if(decision.getMsgType().equals(ABORT))
-    			throw new KVException(ERROR_INVALID_FORMAT);
+    			throw new KVException(errMsg);
 
     		if(isPutReq){
     			masterCache.put(key, value);
@@ -251,7 +252,7 @@ public class TPCMaster {
     			vote = new KVMessage(slaveSocket, TIMEOUT);
     		}catch (KVException e) {
     			//if(e.getKVMessage().getMessage().equals("TIME OUT"))
-    			vote = new KVMessage(ABORT);
+    			vote = new KVMessage(e.getKVMessage());
     		}finally {
     			if(slaveSocket != null){
 					try {
@@ -291,8 +292,13 @@ public class TPCMaster {
     						hasAck = true;
     					
     					// see two-phase requirement 7
-    					if(response != null && !response.getMsgType().equals(ACK))
+    					if(response != null && !response.getMsgType().equals(ACK)){
+    						/*
+    						hasAck = true;
     						decision = new KVMessage(ABORT);
+    						*/
+    						assert(false);
+    					}
     					//}
     				}catch (KVException e) {
     					//ignore
